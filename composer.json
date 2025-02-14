@@ -5,12 +5,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "VictorCodigo\\UploadFile\\": "src/"
+            "VictorCodigo\\SymfonyFormExtended\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VictorCodigo\\UploadFile\\Tests\\": "tests/"
+            "VictorCodigo\\SymfonyFormExtended\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -26,5 +26,13 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^11.5"
+    },
+    "require": {
+        "symfony/form": "^6.4",
+        "doctrine/collections": "^2.2",
+        "symfony/translation": "^6.4",
+        "symfony/http-foundation": "^6.4",
+        "victor-codigo/upload-file": "^1.0",
+        "symfony/security-csrf": "^6.4"
     }
 }
