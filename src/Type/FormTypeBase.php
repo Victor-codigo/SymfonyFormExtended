@@ -8,13 +8,16 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Form\FormTypeExtendedInterface;
 
 /**
  * @template TData
  *
  * @template-extends AbstractType<TData>
+ *
+ * @template-implements FormTypeExtendedInterface<TData>
  */
-abstract class FormTypeBase extends AbstractType
+abstract class FormTypeBase extends AbstractType implements FormTypeExtendedInterface
 {
     public const string TRANSLATION_DOMAIN = '';
     protected const string CSRF_TOKEN_ID = '';
