@@ -1,39 +1,52 @@
-# Upload file
-Classes to manage file upload with symfony or package http-foundation.
-<br><br>This package is in charge of Geting the file uploaded, and move it to a new path, with a secure name.
-<br>It also allows to replace a file by the new uploaded.
+# Symfony form extended
+Classes to extend Symfony form functionality.
+<br>Adds:
+- Form messages translation
+- Add flash bag messages
+- Uploaded files handler
 
 
 ## Prerequisites
   - PHP 8.1
-  - Symfony 6.4 or package http-foundation
-    
+  - Symfony 6.4
+
 ## Stack
 - [PHP 8.1](https://www.php.net/)
 - [PHPUnit 11.5](https://phpunit.de/index.html)
 - [PHPStan](https://phpstan.org)
 - [Composer](https://getcomposer.org/)
-  
+
 ## Usage
   1. Install
-     
+
      ```
-     composer require victor-codigo/upload-file
+     composer require victor-codigo/symfony-form-extended
      ```
-     
+
  3. Classes
-    - UploadFileService: It is the main class. Manages file uploads.
-    - FileSymfonyAdapter: It is a wrapper for http-foundation package class File.
-    - UploadedFileSymfonyAdapter: Its a wrapper for http-foundation package class UploadedFile.
+    - FormFactoryExtended: Its a wrapper for class FormFactoryInterface. Allows to build class FormExtended.
+    - FormFactoryExtendedInterface: It is an interface for class FormFactoryExtended.
+    - FormExtended: It is a wrapper that extends Form Symfony functionality.
+    - FormExtendedInterface: It is an interface for FormExtended class.
+    - FormTypeBase: Extends Symfony AbstractType class functionality.
+    - FormTypeExtendedInterface: An interface for FormTypeBase
 
-```php
+#### FormFactoryExtended methods:
+Adds following methods to interface **Symfony\Component\Form\FormFactoryInterface**.
 
-```
-   
-#### UploadFileService methods:
 | Method | Description | Params | Return |
 |:-------------|:-------------|:-------------|:-----|
-| **__construct** | Creates class instance | Symfony\Component\String\Slugger\SluggerInterface | VictorCodigo\UploadFile\Adapter\UploadFileService |
-| **__invoke** | Moves the uploaded file to a new location | 1. VictorCodigo\UploadFile\Domain\UploadedFileInterface: The file uploaded. <br>2. string: path where files are uploaded. <br>3. string or null: File name to remove in uploads path. | VictorCodigo\UploadFile\Domain\FileInterface |
-| **getFileName** | Gets the name of the file, after been renamed |  | string |
-| **getNewInstance** | Creates a new instance of the class |  | VictorCodigo\UploadFile\Adapter\UploadFileService |
+| **__construct** | creates the builder | 1. Symfony\Component\Form\FormFactoryInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. VictorCodigo\UploadFile\Adapter\UploadFileService <br>4. Symfony\Component\HttpFoundation\RequestStack | VictorCodigo\SymfonyFormExtended\Factory |
+| **createNamedTranslated** | creates a VictorCodigo\SymfonyFormExtended\FormFormExtended | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br>5. string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface |
+
+#### FormFactoryExtended methods:
+Adds following methods to interface **Symfony\Component\Form\FormInterface**.
+
+| Method | Description | Params | Return |
+|:-------------|:-------------|:-------------|:-----|
+| **__construct** | Creates the form | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br> string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
+| **getErrorsTranslated** | Gets form errors translated | 1. bool $deep <br>2. bool $flatten | Symfony\Component\Form\FormErrorIterator |
+| **getMessagesSuccessTranslated** | Gets form messages, when form validation is successful |  |  Doctrine\Common\Collections\Collection |
+| **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string $messagesSuccessType <br>2. string $messagesErrorType <br>3. bool $deep |  |
+| **setUploadedFilesConfig** | Sets up form configuration for files uploaded | 1. string $pathToSaveUploadedFiles <br>2. array<int, string> $filenamesToBeReplacedByUploaded | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
+
