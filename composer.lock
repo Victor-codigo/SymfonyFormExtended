@@ -1990,16 +1990,16 @@
         },
         {
             "name": "victor-codigo/upload-file",
-            "version": "v1.0.1",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Victor-codigo/UploadFile.git",
-                "reference": "e9ef23b13c5477528d5550c361e703fe6ffe780e"
+                "reference": "7eccd0b8bc139cca9afe909dbda8ec5695dbdf8b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Victor-codigo/UploadFile/zipball/e9ef23b13c5477528d5550c361e703fe6ffe780e",
-                "reference": "e9ef23b13c5477528d5550c361e703fe6ffe780e",
+                "url": "https://api.github.com/repos/Victor-codigo/UploadFile/zipball/7eccd0b8bc139cca9afe909dbda8ec5695dbdf8b",
+                "reference": "7eccd0b8bc139cca9afe909dbda8ec5695dbdf8b",
                 "shasum": ""
             },
             "require": {
@@ -2031,9 +2031,9 @@
             "description": "Classes to manage file uploads",
             "support": {
                 "issues": "https://github.com/Victor-codigo/UploadFile/issues",
-                "source": "https://github.com/Victor-codigo/UploadFile/tree/v1.0.1"
+                "source": "https://github.com/Victor-codigo/UploadFile/tree/v1.0.2"
             },
-            "time": "2025-02-15T09:55:28+00:00"
+            "time": "2025-02-15T10:27:12+00:00"
         }
     ],
     "packages-dev": [
