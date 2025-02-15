@@ -50,3 +50,36 @@ Adds following methods to interface **Symfony\Component\Form\FormInterface**.
 | **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string $messagesSuccessType <br>2. string $messagesErrorType <br>3. bool $deep |  |
 | **setUploadedFilesConfig** | Sets up form configuration for files uploaded | 1. string $pathToSaveUploadedFiles <br>2. array<int, string> $filenamesToBeReplacedByUploaded | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
 
+## Example
+
+```php
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use VictorCodigo\SymfonyFormExtended\Factory\FormFactoryExtendedInterface;
+
+class Controller extends AbstractController
+{
+    public function __construct(
+        private FormFactoryExtendedInterface $formFactoryExtended,
+    ) {
+    }
+
+    public function __invoke(Request $request): Response
+    {
+        $form = $this->formFactoryExtended->createNamedTranslated('form_name', FormType::class, 'en');
+
+        $form
+            ->setUploadedFilesConfig('path/to/save/files')
+            ->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->recipeCreate($form);
+        }
+
+        $errorsTranslated = $form->getErrorsTranslated(true);
+        $messageSuccess = $form->getMessagesSuccessTranslated();
+        $form->addFlashMessagesTranslated('messages_success', 'messages_error', true);
+    }
+}
+```
