@@ -7,8 +7,8 @@ namespace VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormError;
-use VictorCodigo\SymfonyFormExtended\Form\FormTypeExtendedInterface;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
+use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 
 /**
  * @extends FormTypeBase<FormTypeForTesting>
