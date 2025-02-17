@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-namespace VictorCodigo\SymfonyFormExtended\Form;
+namespace VictorCodigo\SymfonyFormExtended\Type;
+
 
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormError;
