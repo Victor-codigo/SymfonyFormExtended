@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
+use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
 use VictorCodigo\UploadFile\Adapter\UploadedFileSymfonyAdapter;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadCanNotWriteException;
