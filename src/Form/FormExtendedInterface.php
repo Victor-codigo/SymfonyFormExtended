@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @extends FormInterface<FormExtendedInterface>
@@ -27,7 +28,7 @@ interface FormExtendedInterface extends FormInterface
     public function addFlashMessagesTranslated(string $messagesSuccessType, string $messagesErrorType, bool $deep): void;
 
     /**
-     * @param array<int, string|null> $fileNamesToReplace Name of files that should be replaced by the new ones.$uploadedFiles and $fileNamesToReplace keys, must coincide
+     * @param array<int, string> $filenamesToBeReplacedByUploaded
      */
-    public function setUploadedFilesConfig(string $pathToSaveFile, array $fileNamesToReplace = []): static;
+    public function uploadFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static;
 }

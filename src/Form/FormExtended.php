@@ -53,11 +53,6 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     private UploadFileService $uploadFile;
     public readonly string $translationDomain;
     public readonly ?string $locale;
-    private string $pathToSaveUploadedFiles;
-    /**
-     * @var array<int, string>
-     */
-    private array $filenamesToBeReplacedByUploaded = [];
 
     /**
      * @param FormInterface<mixed> $form
@@ -160,17 +155,6 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     }
 
     /**
-     * @param array<int, string> $filenamesToBeReplacedByUploaded
-     */
-    public function setUploadedFilesConfig(string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static
-    {
-        $this->pathToSaveUploadedFiles = $pathToSaveUploadedFiles;
-        $this->filenamesToBeReplacedByUploaded = $filenamesToBeReplacedByUploaded;
-
-        return $this;
-    }
-
-    /**
      * Inspects the given request and calls {@link submit()} if the form was
      * submitted.
      *
@@ -196,17 +180,23 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     {
         $this->form->handleRequest($request);
 
-        if (null === $request) {
-            return $this;
-        }
+        return $this;
+    }
 
-        $uploadedFilesMovedToPath = $this->uploadFormFiles($request);
+    /**
+     * @param array<int, string> $filenamesToBeReplacedByUploaded
+     */
+    public function uploadFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static
+    {
+        $uploadedFilesMovedToPath = $this->uploadFormFiles($request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
         $this->setDataClassFiles($uploadedFilesMovedToPath);
 
         return $this;
     }
 
     /**
+     * @param array<int, string> $filenamesToBeReplacedByUploaded
+     *
      * @return array<string, FileInterface>
      *
      * @throws FileUploadCanNotWriteException
@@ -219,22 +209,22 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      * @throws FileUploadPartialFileException
      * @throws FileUploadReplaceException
      */
-    private function uploadFormFiles(Request $request): array
+    private function uploadFormFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded): array
     {
         $uploadedFiles = $this->getUploadedFormFiles($request);
         $uploadedFilesMovedToPath = [];
 
         /** @var string|false */
-        $fileNameToReplace = reset($this->filenamesToBeReplacedByUploaded);
+        $fileNameToReplace = reset($filenamesToBeReplacedByUploaded);
         foreach ($uploadedFiles as $propertyName => $uploadFile) {
             if (false === $fileNameToReplace) {
                 $fileNameToReplace = null;
             }
 
-            $uploadedFilesMovedToPath[$propertyName] = $this->uploadFile->__invoke($uploadFile, $this->pathToSaveUploadedFiles, $fileNameToReplace);
+            $uploadedFilesMovedToPath[$propertyName] = $this->uploadFile->__invoke($uploadFile, $pathToSaveUploadedFiles, $fileNameToReplace);
 
             /** @var string|false */
-            $fileNameToReplace = next($this->filenamesToBeReplacedByUploaded);
+            $fileNameToReplace = next($filenamesToBeReplacedByUploaded);
         }
 
         return $uploadedFilesMovedToPath;

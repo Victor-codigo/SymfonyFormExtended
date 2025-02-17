@@ -298,7 +298,7 @@ class FormExtendedTest extends TestCase
     }
 
     #[Test]
-    public function itShouldHandleRequestWithFiles(): void
+    public function itShouldUploadFiles(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
@@ -311,11 +311,6 @@ class FormExtendedTest extends TestCase
         $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = $this->fillFormClassData($formFilesUploadedMovedToNewPath);
-
-        $this->form
-            ->expects($this->once())
-            ->method('handleRequest')
-            ->with($this->request);
 
         $this->form
             ->expects($this->once())
@@ -350,56 +345,14 @@ class FormExtendedTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object
-            ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-            ->handleRequest($this->request);
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         self::assertEquals($object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
     #[Test]
-    public function itShouldHandleRequestIsNull(): void
-    {
-        $formName = 'formName';
-        $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
-        $filenamesToBeReplacedByUploaded = [];
-        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
-        $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
-        $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
-        $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
-        $formDataClass = new FormDataClassForTesting();
-        $formDataClassExpected = new FormDataClassForTesting();
-
-        $this->form
-            ->expects($this->once())
-            ->method('handleRequest')
-            ->with(null);
-
-        $this->form
-            ->expects($this->never())
-            ->method('getName');
-
-        $this->form
-            ->expects($this->never())
-            ->method('getData');
-
-        $this->uploadFile
-            ->expects($this->never())
-            ->method('__invoke');
-
-        $return = $object
-        ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-        ->handleRequest(null);
-
-        self::assertEquals($object, $return);
-        self::assertEquals($formDataClassExpected, $formDataClass);
-    }
-
-    #[Test]
-    public function itShouldHandleRequestWithoutFiles(): void
+    public function itShouldNotUploadFilesRequestHasNot(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
@@ -410,11 +363,6 @@ class FormExtendedTest extends TestCase
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
         $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
-
-        $this->form
-            ->expects($this->once())
-            ->method('handleRequest')
-            ->with($this->request);
 
         $this->form
             ->expects($this->once())
@@ -430,16 +378,14 @@ class FormExtendedTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-        $return = $object
-            ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-            ->handleRequest($this->request);
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         self::assertEquals($object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
     #[Test]
-    public function itShouldHandleRequestWithFilesAndFilesToReplace(): void
+    public function itShouldUploadFilesAndFilesToReplace(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
@@ -455,11 +401,6 @@ class FormExtendedTest extends TestCase
         $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = $this->fillFormClassData($formFilesUploadedMovedToNewPath);
-
-        $this->form
-            ->expects($this->once())
-            ->method('handleRequest')
-            ->with($this->request);
 
         $this->form
             ->expects($this->once())
@@ -503,16 +444,14 @@ class FormExtendedTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object
-            ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-            ->handleRequest($this->request);
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         self::assertEquals($object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
     #[Test]
-    public function itShouldHandleRequestWithoutFilesAndFilesToReplace(): void
+    public function itShouldNotUploadFilesAndFilesToReplace(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
@@ -529,11 +468,6 @@ class FormExtendedTest extends TestCase
 
         $this->form
             ->expects($this->once())
-            ->method('handleRequest')
-            ->with($this->request);
-
-        $this->form
-            ->expects($this->once())
             ->method('getName')
             ->willReturn($formName);
 
@@ -546,16 +480,14 @@ class FormExtendedTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-        $return = $object
-            ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-            ->handleRequest($this->request);
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         self::assertEquals($object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
     #[Test]
-    public function itShouldHandleRequestWithFilesFileNameUploadedDoesNotExistsInTheDataClass(): void
+    public function itShouldUploadFilesWithFilesFileNameUploadedDoesNotExistsInTheDataClass(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
@@ -577,11 +509,6 @@ class FormExtendedTest extends TestCase
         $formDataClass->image3 = null;
         $formDataClassExpected = $this->fillFormClassData($formFilesUploadedMovedToNewPath);
         $formDataClassExpected->image1 = null;
-
-        $this->form
-            ->expects($this->once())
-            ->method('handleRequest')
-            ->with($this->request);
 
         $this->form
             ->expects($this->once())
@@ -616,9 +543,7 @@ class FormExtendedTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object
-            ->setUploadedFilesConfig($pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded)
-            ->handleRequest($this->request);
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         self::assertEquals($object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
