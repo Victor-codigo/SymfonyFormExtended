@@ -37,7 +37,7 @@ Adds following methods to interface **Symfony\Component\Form\FormFactoryInterfac
 | Method | Description | Params | Return |
 |:-------------|:-------------|:-------------|:-----|
 | **__construct** | creates the builder | 1. Symfony\Component\Form\FormFactoryInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. VictorCodigo\UploadFile\Adapter\UploadFileService <br>4. Symfony\Component\HttpFoundation\RequestStack | VictorCodigo\SymfonyFormExtended\Factory |
-| **createNamedTranslated** | creates a VictorCodigo\SymfonyFormExtended\FormFormExtended | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br>5. string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface |
+| **createNamedExtended** | creates a VictorCodigo\SymfonyFormExtended\FormFormExtended | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br>5. string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface |
 
 #### FormFactoryExtended methods:
 Adds following methods to interface **Symfony\Component\Form\FormInterface**.
@@ -67,7 +67,7 @@ class Controller extends AbstractController
 
     public function __invoke(Request $request): Response
     {
-        $form = $this->formFactoryExtended->createNamedTranslated('form_name', FormType::class, 'en');
+        $form = $this->formFactoryExtended->createNamedExtended('form_name', FormType::class, 'en');
 
         $form
             ->setUploadedFilesConfig('path/to/save/files')
