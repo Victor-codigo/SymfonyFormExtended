@@ -128,7 +128,7 @@ class FormFactoryExtendedTest extends TestCase
         $formExpected = new FormExtended($this->form, $this->translator, $this->flashBag, $this->uploadedFile, $this->locale);
         $object = $this->createFormFactorExtended();
 
-        $return = $object->createNamedTranslated($formName, $formType, $this->locale);
+        $return = $object->createNamedExtended($formName, $formType, $this->locale);
 
         self::assertInstanceOf(FormExtended::class, $return);
         self::assertEquals($formExpected->getName(), $return->getName());

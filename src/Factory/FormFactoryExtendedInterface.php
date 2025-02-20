@@ -20,5 +20,5 @@ interface FormFactoryExtendedInterface extends FormFactoryInterface
      *
      * @throws InvalidOptionsException if any given option is not applicable to the given type
      */
-    public function createNamedTranslated(string $name, string $type, ?string $locale = null, mixed $data = null, array $options = []): FormExtendedInterface;
+    public function createNamedExtended(string $name, string $type, ?string $locale = null, mixed $data = null, array $options = []): FormExtendedInterface;
 }
