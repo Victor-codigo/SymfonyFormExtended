@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -16,12 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 interface FormExtendedInterface extends FormInterface
 {
     /**
-     * @return FormErrorIterator<FormError>
+     * @return Collection<int, FormMessage>
      */
-    public function getErrorsTranslated(bool $deep = false, bool $flatten = true): FormErrorIterator;
+    public function getMessageErrorsTranslated(bool $deep = false, bool $flatten = true): Collection;
 
     /**
-     * @return Collection<int, string>
+     * @return Collection<int, FormMessage>
      */
     public function getMessagesSuccessTranslated(): Collection;
 

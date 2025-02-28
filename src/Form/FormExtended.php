@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\ClearableErrorsInterface;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
@@ -68,27 +69,25 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     }
 
     /**
-     * @return FormErrorIterator<FormError>
+     * @return Collection<int, FormMessage>
      */
-    public function getErrorsTranslated(bool $deep = false, bool $flatten = true): FormErrorIterator
+    public function getMessageErrorsTranslated(bool $deep = false, bool $flatten = true): Collection
     {
         $errors = $this->form->getErrors($deep, $flatten);
 
         $errorsTranslated = [];
         foreach ($errors as $error) {
-            $errorTranslated = new FormError(
+            $errorTranslated = new FormMessage(
                 $this->translator->trans($error->getMessage(), $error->getMessageParameters(), $this->translationDomain, $this->locale),
                 $error->getMessageTemplate(),
                 $error->getMessageParameters(),
                 $error->getMessagePluralization(),
-                $error->getCause()
             );
 
-            $errorTranslated->setOrigin($this->form);
             $errorsTranslated[] = $errorTranslated;
         }
 
-        return new FormErrorIterator($this->form, $errorsTranslated);
+        return new ArrayCollection($errorsTranslated);
     }
 
     /**
@@ -106,7 +105,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     }
 
     /**
-     * @return Collection<int, string>
+     * @return Collection<int, FormMessage>
      */
     public function getMessagesSuccessTranslated(): Collection
     {
@@ -114,29 +113,28 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         $formType = $this->form->getConfig()->getType()->getInnerType();
 
         return $formType
-           ->getFormSuccessMessages()
-           ->map(fn (FormError $messageOk): string => $this->translator->trans(
-               $messageOk->getMessage(),
-               $messageOk->getMessageParameters(),
-               $this->translationDomain,
-               $this->locale
-           ));
+            ->getFormSuccessMessages()
+            ->map(fn (FormMessage $messageOk): FormMessage => new FormMessage(
+                $this->translator->trans($messageOk->message, $messageOk->parameters, $this->translationDomain, $this->locale),
+                $messageOk->template,
+                $messageOk->parameters,
+                $messageOk->pluralization,
+            ));
     }
 
     public function addFlashMessagesTranslated(string $messagesSuccessType, string $messagesErrorType, bool $deep): void
     {
-        $errors = $this->getErrorsTranslated($deep);
+        $errors = $this->getMessageErrorsTranslated($deep);
 
         if (0 === $errors->count()) {
             $this->getMessagesSuccessTranslated()
-                 ->map(fn (string $message) => $this->flashBag->add($messagesSuccessType, $message));
+                 ->map(fn (FormMessage $message) => $this->flashBag->add($messagesSuccessType, $message));
 
             return;
         }
 
         foreach ($errors as $error) {
-            $errorMessage = $error->getMessage();
-            $this->flashBag->add($messagesErrorType, $errorMessage);
+            $this->flashBag->add($messagesErrorType, $error);
         }
     }
 
