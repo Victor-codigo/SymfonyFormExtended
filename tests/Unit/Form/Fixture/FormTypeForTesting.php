@@ -6,7 +6,7 @@ namespace VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Form\FormError;
+use VictorCodigo\SymfonyFormExtended\Form\FormMessage;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 
@@ -20,20 +20,20 @@ class FormTypeForTesting extends FormTypeBase implements FormTypeExtendedInterfa
     public const string  TRANSLATION_DOMAIN = 'FormTypeForTesting';
 
     /**
-     * @return Collection<array-key, FormError>
+     * @return Collection<array-key, FormMessage>
      */
     public function getFormSuccessMessages(): Collection
     {
-        return self::getFormErrors();
+        return self::getFormMessageErrors();
     }
 
     /**
-     * @return Collection<array-key, FormError>
+     * @return Collection<array-key, FormMessage>
      */
-    public static function getFormErrors(): Collection
+    public static function getFormMessageErrors(): Collection
     {
         return new ArrayCollection([
-            new FormError(
+            new FormMessage(
                 'message.error.msg1',
                 'messageTemplate.error.msg1',
                 [
@@ -41,9 +41,8 @@ class FormTypeForTesting extends FormTypeBase implements FormTypeExtendedInterfa
                     'param2' => 'value2',
                 ],
                 null,
-                null
             ),
-            new FormError(
+            new FormMessage(
                 'message.error.msg2',
                 'messageTemplate.error.msg2',
                 [
@@ -51,16 +50,14 @@ class FormTypeForTesting extends FormTypeBase implements FormTypeExtendedInterfa
                     'param2' => 'value2',
                 ],
                 1,
-                'cause msg 2'
             ),
-            new FormError(
+            new FormMessage(
                 'message.error.msg3',
                 'messageTemplate.error.msg3',
                 [
                     'param1' => 'value1',
                 ],
                 2,
-                'cause msg 3'
             ),
         ]);
     }
