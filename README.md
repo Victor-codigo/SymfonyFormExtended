@@ -9,6 +9,7 @@ Classes to extend Symfony form functionality.
 ## Prerequisites
   - PHP 8.1
   - Symfony 6.4
+  - Doctrine\Common\Collections\Collection
 
 ## Stack
 - [PHP 8.1](https://www.php.net/)
@@ -36,19 +37,19 @@ Adds following methods to interface **Symfony\Component\Form\FormFactoryInterfac
 
 | Method | Description | Params | Return |
 |:-------------|:-------------|:-------------|:-----|
-| **__construct** | creates the builder | 1. Symfony\Component\Form\FormFactoryInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. VictorCodigo\UploadFile\Adapter\UploadFileService <br>4. Symfony\Component\HttpFoundation\RequestStack | VictorCodigo\SymfonyFormExtended\Factory |
-| **createNamedExtended** | creates a VictorCodigo\SymfonyFormExtended\FormFormExtended | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br>5. string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface |
+| **__construct** | creates the builder | 1. Symfony\Component\Form\FormFactoryInterface: Symfony form to use <br>2. Symfony\Contracts\Translation\TranslatorInterface: Symfony translation bundle <br>3. VictorCodigo\UploadFile\Adapter\UploadFileService: Upload File bundle <br>4. Symfony\Component\HttpFoundation\RequestStack: Request  | VictorCodigo\SymfonyFormExtended\Factory |
+| **createNamedExtended** | creates a VictorCodigo\SymfonyFormExtended\FormFormExtended | 1. string: Form name <br>2. string: Full qualified name form type class <br>3. string: Translation locale <br>4. mixed: Form initial data <br>5. array<string, mixed>: options | VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface |
 
-#### FormFactoryExtended methods:
+#### FormExtended methods:
 Adds following methods to interface **Symfony\Component\Form\FormInterface**.
 
 | Method | Description | Params | Return |
 |:-------------|:-------------|:-------------|:-----|
-| **__construct** | Creates the form | 1. Symfony\Component\Form\FormInterface <br>2. Symfony\Contracts\Translation\TranslatorInterface <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService <br> string: $locale | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
-| **getErrorsTranslated** | Gets form errors translated | 1. bool $deep <br>2. bool $flatten | Symfony\Component\Form\FormErrorIterator |
-| **getMessagesSuccessTranslated** | Gets form messages, when form validation is successful |  |  Doctrine\Common\Collections\Collection |
-| **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string $messagesSuccessType <br>2. string $messagesErrorType <br>3. bool $deep |  |
-| **setUploadedFilesConfig** | Sets up form configuration for files uploaded | 1. string $pathToSaveUploadedFiles <br>2. array<int, string> $filenamesToBeReplacedByUploaded | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
+| **__construct** | Creates the form | 1. Symfony\Component\Form\FormInterface: Symfony form to use <br>2. Symfony\Contracts\Translation\TranslatorInterface: Symfony translation bundle <br>3. Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface: Symfony flash bag messages <br>4. VictorCodigo\UploadFile\Adapter\UploadFileService: Upload file bundle <br> string: Translation locale | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
+| **getMessageErrorsTranslated** | Gets form message errors translated | 1. bool: Whether to include errors of child forms as well <br>2. bool: Whether to flatten the list of errors in case $deep is set to true | Doctrine\Common\Collections\Collection<int, FormMessage> |
+| **getMessagesSuccessTranslated** | Gets form messages, when form validation is successful |  |  Doctrine\Common\Collections\Collection<int, FormMessage> |
+| **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string: Key for success messages <br>2. string: Key for error messages <br>3. bool: Whether to include errors of child forms as well |  |
+| **uploadFiles** | Sets up form configuration for files uploaded, and move files to a specific path | 1. Symfony\Component\HttpFoundation\Request: Symfony request <br>2. string: Upload path where files are moved and saved <br>3. array<int, string>: File names to be removed in the path in the upload path | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
 
 ## Example
 
@@ -69,15 +70,13 @@ class Controller extends AbstractController
     {
         $form = $this->formFactoryExtended->createNamedExtended('form_name', FormType::class, 'en');
 
-        $form
-            ->setUploadedFilesConfig('path/to/save/files')
-            ->handleRequest($request);
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->recipeCreate($form);
+            $form->uploadFiles($request, '/path/to/upload/files');
         }
 
-        $errorsTranslated = $form->getErrorsTranslated(true);
+        $errorsTranslated = $form->getMessageErrorsTranslated(true);
         $messageSuccess = $form->getMessagesSuccessTranslated();
         $form->addFlashMessagesTranslated('messages_success', 'messages_error', true);
     }
