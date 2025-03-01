@@ -29,4 +29,14 @@ interface FormExtendedInterface extends FormInterface
      * @param array<int, string> $filenamesToBeReplacedByUploaded
      */
     public function uploadFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static;
+
+    /**
+     * @return Collection<int, FormMessage>
+     */
+    public function getFlashMessagesData(string $messagesType): Collection;
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function getFlashMessages(string $messagesType): Collection;
 }

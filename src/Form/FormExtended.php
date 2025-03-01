@@ -139,6 +139,27 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     }
 
     /**
+     * @return Collection<int, FormMessage>
+     */
+    public function getFlashMessagesData(string $messagesType): Collection
+    {
+        /** @var array<int, FormMessage> */
+        $messagesData = $this->flashBag->get($messagesType);
+
+        return new ArrayCollection($messagesData);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function getFlashMessages(string $messagesType): Collection
+    {
+        $messages = $this->getFlashMessagesData($messagesType);
+
+        return $messages->map(fn (FormMessage $message): string => $message->message);
+    }
+
+    /**
      * @throws \LogicException
      */
     private function getTranslationDomain(): string

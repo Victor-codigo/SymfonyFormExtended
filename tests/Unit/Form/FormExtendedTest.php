@@ -289,6 +289,53 @@ class FormExtendedTest extends TestCase
         $object->addFlashMessagesTranslated($flashBagSuccessType, $flashBagErrorType, true);
     }
 
+    #[Test]
+    public function itShouldGetFlashMessagesData(): void
+    {
+        $messagesType = 'messages.type';
+        $messagesData = new ArrayCollection([
+            new FormMessage('message 1 ', 'template 1', ['param 1' => 'value 1'], null),
+            new FormMessage('message 2 ', 'template 2', ['param 2' => 'value 2'], null),
+        ]);
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended();
+
+        $this->flashBag
+            ->expects($this->once())
+            ->method('get')
+            ->with($messagesType)
+            ->willReturn($messagesData->toArray());
+
+        $return = $object->getFlashMessagesData($messagesType);
+
+        self::assertEquals($messagesData, $return);
+    }
+
+    #[Test]
+    public function itShouldGetFlashMessages(): void
+    {
+        $messagesType = 'messages.type';
+        $messagesData = new ArrayCollection([
+            new FormMessage('message 1 ', 'template 1', ['param 1' => 'value 1'], null),
+            new FormMessage('message 2 ', 'template 2', ['param 2' => 'value 2'], null),
+        ]);
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended();
+
+        $this->flashBag
+            ->expects($this->once())
+            ->method('get')
+            ->with($messagesType)
+            ->willReturn($messagesData->toArray());
+
+        $return = $object->getFlashMessages($messagesType);
+
+        self::assertEquals(
+            $messagesData->map(fn (FormMessage $message): string => $message->message),
+            $return,
+        );
+    }
+
     /**
      * @param Collection<string, UploadedFileSymfonyAdapter&MockObject> $images
      */
