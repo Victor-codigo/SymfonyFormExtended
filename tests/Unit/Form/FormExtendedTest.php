@@ -350,9 +350,9 @@ class FormExtendedTest extends TestCase
     }
 
     /**
-     * @param Collection<string, UploadedFile> $formFilesUploaded
+     * @param Collection<string, UploadedFile|null> $formFilesUploaded
      */
-    private function setRequestFilesUploaded(Request $request, string $formName, Collection $formFilesUploaded): void
+    private function setRequestFilesUploaded(string $formName, Collection $formFilesUploaded): void
     {
         $this->request->files = new FileBag();
         $this->request->files->set($formName, $formFilesUploaded->toArray());
@@ -369,7 +369,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = $this->fillFormClassData($formFilesUploadedMovedToNewPath);
 
@@ -423,7 +423,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploaded = new ArrayCollection();
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
 
         $this->form
             ->expects($this->once())
@@ -431,9 +431,40 @@ class FormExtendedTest extends TestCase
             ->willReturn($formName);
 
         $this->form
+            ->expects($this->never())
+            ->method('getData');
+
+        $this->uploadFile
+            ->expects($this->never())
+            ->method('__invoke');
+
+        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+
+        self::assertEquals($object, $return);
+        self::assertEquals($formDataClassExpected, $formDataClass);
+    }
+
+    #[Test]
+    public function itShouldNotUploadFilesRequestImageIsNull(): void
+    {
+        $formName = 'formName';
+        $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
+        $filenamesToBeReplacedByUploaded = [];
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended();
+        $formFilesUploaded = new ArrayCollection(['image' => null]);
+        $formDataClass = new FormDataClassForTesting();
+        $formDataClassExpected = new FormDataClassForTesting();
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
+
+        $this->form
             ->expects($this->once())
-            ->method('getData')
-            ->willReturn($formDataClass);
+            ->method('getName')
+            ->willReturn($formName);
+
+        $this->form
+            ->expects($this->never())
+            ->method('getData');
 
         $this->uploadFile
             ->expects($this->never())
@@ -459,7 +490,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = $this->fillFormClassData($formFilesUploadedMovedToNewPath);
 
@@ -525,7 +556,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploaded = new ArrayCollection();
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
 
         $this->form
             ->expects($this->once())
@@ -533,9 +564,8 @@ class FormExtendedTest extends TestCase
             ->willReturn($formName);
 
         $this->form
-            ->expects($this->once())
-            ->method('getData')
-            ->willReturn($formDataClass);
+            ->expects($this->never())
+            ->method('getData');
 
         $this->uploadFile
             ->expects($this->never())
@@ -563,7 +593,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploadedMovedToNewPath->remove('image1');
         $formFilesUploadedMovedToNewPath->set('imageNoExists', $image1);
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
-        $this->setRequestFilesUploaded($this->request, $formName, $formFilesUploaded);
+        $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
         $formDataClass->image1 = null;
         $formDataClass->image2 = null;

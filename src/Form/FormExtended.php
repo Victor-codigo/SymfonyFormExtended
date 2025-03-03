@@ -208,6 +208,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     public function uploadFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static
     {
         $uploadedFilesMovedToPath = $this->uploadFormFiles($request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+
         $this->setDataClassFiles($uploadedFilesMovedToPath);
 
         return $this;
@@ -254,11 +255,15 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     private function getUploadedFormFiles(Request $request): array
     {
-        /** @var array<string, UploadedFile> */
+        /** @var array<string, UploadedFile|null> */
         $uploadedFiles = $request->files->all($this->form->getName());
 
         $uploadedFilesParsed = [];
         foreach ($uploadedFiles as $fileName => $uploadedFile) {
+            if (!$uploadedFile instanceof UploadedFile) {
+                continue;
+            }
+
             $uploadedFilesParsed[$fileName] = new UploadedFileSymfonyAdapter($uploadedFile);
         }
 
@@ -270,6 +275,10 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     private function setDataClassFiles(array $imagesUploaded): void
     {
+        if (empty($imagesUploaded)) {
+            return;
+        }
+
         /** @var object */
         $formDataClass = $this->form->getData();
 
