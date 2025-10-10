@@ -7,6 +7,7 @@ namespace VictorCodigo\SymfonyFormExtended\Form;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 
 /**
  * @extends FormInterface<FormExtendedInterface>
@@ -39,4 +40,9 @@ interface FormExtendedInterface extends FormInterface
      * @return Collection<int, string>
      */
     public function getFlashMessages(string $messagesType): Collection;
+
+    /**
+     * @throws FormExtendedDataClassNotSetException
+     */
+    public function getConstraints(): object;
 }

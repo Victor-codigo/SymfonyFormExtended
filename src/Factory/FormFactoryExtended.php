@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
 
@@ -26,15 +27,22 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     private TranslatorInterface $translator;
     private FlashBagInterface $flashBag;
     private UploadFileService $uploadFile;
+    private FormExtendedConstraints $constraints;
 
     /**
      * @throws \LogicException
      */
-    public function __construct(FormFactoryInterface $formFactory, TranslatorInterface $translator, UploadFileService $uploadFile, RequestStack $request)
-    {
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        TranslatorInterface $translator,
+        UploadFileService $uploadFile,
+        FormExtendedConstraints $constraints,
+        RequestStack $request,
+    ) {
         $this->formFactory = $formFactory;
         $this->translator = $translator;
         $this->uploadFile = $uploadFile;
+        $this->constraints = $constraints;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
@@ -62,7 +70,14 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
         /** @var FormInterface<mixed> */
         $form = $builder->getForm();
 
-        return new FormExtended($form, $this->translator, $this->flashBag, $this->uploadFile, $locale);
+        return new FormExtended(
+            $form,
+            $this->translator,
+            $this->flashBag,
+            $this->uploadFile,
+            $this->constraints,
+            $locale
+        );
     }
 
     /**

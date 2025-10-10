@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
@@ -52,20 +53,28 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     private TranslatorInterface $translator;
     private FlashBagInterface $flashBag;
     private UploadFileService $uploadFile;
+    private FormExtendedConstraints $constraints;
     public readonly string $translationDomain;
     public readonly ?string $locale;
 
     /**
      * @param FormInterface<mixed> $form
      */
-    public function __construct(FormInterface $form, TranslatorInterface $translator, FlashBagInterface $flashBag, UploadFileService $uploadFile, ?string $locale)
-    {
+    public function __construct(
+        FormInterface $form,
+        TranslatorInterface $translator,
+        FlashBagInterface $flashBag,
+        UploadFileService $uploadFile,
+        FormExtendedConstraints $constraints,
+        ?string $locale,
+    ) {
         $this->form = $form;
         $this->translator = $translator;
         $this->translationDomain = $this->getTranslationDomain();
         $this->flashBag = $flashBag;
         $this->uploadFile = $uploadFile;
         $this->locale = $locale;
+        $this->constraints = $constraints;
     }
 
     /**
@@ -289,6 +298,20 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
 
             $formDataClass->$propertyName = $file->getFile();
         }
+    }
+
+    /**
+     * @throws FormExtendedDataClassNotSetException
+     */
+    public function getConstraints(): object
+    {
+        $dataClass = $this->getConfig()->getDataClass();
+
+        if (null === $dataClass) {
+            throw FormExtendedDataClassNotSetException::fromMessage(sprintf('Form [%s]: has not set data_set class.', $this->getConfig()->getName()));
+        }
+
+        return $this->constraints->getFormConstraints($dataClass);
     }
 
     /**

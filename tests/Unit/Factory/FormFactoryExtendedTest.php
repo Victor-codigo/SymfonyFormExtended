@@ -21,6 +21,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Factory\FormFactoryExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait as TraitTestingFormTrait;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
@@ -43,6 +44,7 @@ class FormFactoryExtendedTest extends TestCase
     private RequestStack&MockObject $request;
     private FlashBagInterface&MockObject $flashBag;
     private UploadFileService&MockObject $uploadedFile;
+    private FormExtendedConstraints&MockObject $constraints;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
     /**
      * @var FormBuilderInterface<object>&MockObject
@@ -65,6 +67,7 @@ class FormFactoryExtendedTest extends TestCase
         $this->request = $this->createMock(RequestStack::class);
         $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->uploadedFile = $this->createMock(UploadFileService::class);
+        $this->constraints = $this->createMock(FormExtendedConstraints::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->session = $this->createMock(Session::class);
         $this->formBuilder = $this->createMock(FormBuilderInterface::class);
@@ -84,12 +87,13 @@ class FormFactoryExtendedTest extends TestCase
             $this->formFactory,
             $this->translator,
             $this->uploadedFile,
+            $this->constraints,
             $this->request
         );
     }
 
     #[Test]
-    public function itShouldCreateAFormExtended2(): void
+    public function itShouldCreateAFormExtended(): void
     {
         $formName = 'formName';
         $formType = FormTypeForTesting::class;
@@ -125,7 +129,14 @@ class FormFactoryExtendedTest extends TestCase
             ->method('getFlashBag')
             ->willReturn($this->flashBag);
 
-        $formExpected = new FormExtended($this->form, $this->translator, $this->flashBag, $this->uploadedFile, $this->locale);
+        $formExpected = new FormExtended(
+            $this->form,
+            $this->translator,
+            $this->flashBag,
+            $this->uploadedFile,
+            $this->constraints,
+            $this->locale
+        );
         $object = $this->createFormFactorExtended();
 
         $return = $object->createNamedExtended($formName, $formType, $this->locale);

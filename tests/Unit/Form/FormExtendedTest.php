@@ -22,7 +22,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormMessage;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
@@ -48,6 +50,7 @@ class FormExtendedTest extends TestCase
     private CsrfTokenManagerInterface&MockObject $csrfToneManager;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
     private UploadFileService&MockObject $uploadFile;
+    private FormExtendedConstraints&MockObject $constraints;
     private Request&MockObject $request;
     private FormTypeForTesting $formType;
     private string $locale = 'locale';
@@ -73,6 +76,7 @@ class FormExtendedTest extends TestCase
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->uploadFile = $this->createMock(UploadFileService::class);
+        $this->constraints = $this->createMock(FormExtendedConstraints::class);
         $this->request = $this->createMock(Request::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->csrfToneManager = $this->createMock(CsrfTokenManagerInterface::class);
@@ -86,7 +90,8 @@ class FormExtendedTest extends TestCase
             $this->translator,
             $this->flashBag,
             $this->uploadFile,
-            $this->locale
+            $this->constraints,
+            $this->locale,
         );
     }
 
@@ -368,6 +373,7 @@ class FormExtendedTest extends TestCase
         $object = $this->createFormExtended();
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
+        /** @var Collection<string, UploadedFile|null> */
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
         $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
@@ -452,6 +458,7 @@ class FormExtendedTest extends TestCase
         $filenamesToBeReplacedByUploaded = [];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
         $object = $this->createFormExtended();
+        /** @var Collection<string, UploadedFile|null> */
         $formFilesUploaded = new ArrayCollection(['image' => null]);
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
@@ -489,6 +496,7 @@ class FormExtendedTest extends TestCase
         $object = $this->createFormExtended();
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
+        /** @var Collection<string, UploadedFile|null> */
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
         $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
@@ -592,6 +600,7 @@ class FormExtendedTest extends TestCase
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath->remove('image1');
         $formFilesUploadedMovedToNewPath->set('imageNoExists', $image1);
+        /** @var Collection<string, UploadedFile|null> */
         $formFilesUploaded = $formFilesUploadedSymfonyAdapter->map(fn (UploadedFileSymfonyAdapter&MockObject $uploadedFile): UploadedFile => $uploadedFile->getFile());
         $this->setRequestFilesUploaded($formName, $formFilesUploaded);
         $formDataClass = new FormDataClassForTesting();
@@ -701,5 +710,62 @@ class FormExtendedTest extends TestCase
 
         $this->expectException(LogicException::class);
         $object->clearErrors(true);
+    }
+
+    #[Test]
+    public function itShouldGetFormConstraints(): void
+    {
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended();
+        $dataClass = 'formDataClass';
+        $constraintsExpected = new class {
+            public object $notBlank;
+            public object $length;
+        };
+
+        $this->form
+            ->expects(self::once())
+            ->method('getConfig')
+            ->willReturn($this->formConfig);
+
+        $this->formConfig
+            ->expects(self::once())
+            ->method('getDataClass')
+            ->willReturn($dataClass);
+
+        $this->constraints
+            ->expects(self::once())
+            ->method('getFormConstraints')
+            ->with($dataClass)
+            ->willReturn($constraintsExpected);
+
+        $return = $object->getConstraints();
+
+        self::assertEquals($constraintsExpected, $return);
+    }
+
+    #[Test]
+    public function itShouldFailGetFormConstraintsNoDataClassSet(): void
+    {
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended();
+        $dataClass = null;
+
+        $this->form
+            ->expects(self::exactly(2))
+            ->method('getConfig')
+            ->willReturn($this->formConfig);
+
+        $this->formConfig
+            ->expects(self::once())
+            ->method('getDataClass')
+            ->willReturn($dataClass);
+
+        $this->constraints
+            ->expects(self::never())
+            ->method('getFormConstraints');
+
+        $this->expectException(FormExtendedDataClassNotSetException::class);
+        $object->getConstraints();
     }
 }
