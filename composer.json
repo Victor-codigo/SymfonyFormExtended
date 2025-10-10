@@ -29,10 +29,11 @@
     },
     "require": {
         "symfony/form": "^6.4",
-        "doctrine/collections": "^2.2",
+        "doctrine/collections": "~2.2",
         "symfony/translation": "^6.4",
         "symfony/http-foundation": "^6.4",
-        "victor-codigo/upload-file": "^1.0",
-        "symfony/security-csrf": "^6.4"
+        "victor-codigo/upload-file": "~1.0",
+        "symfony/security-csrf": "^6.4",
+        "symfony/validator": "^6.4"
     }
 }
