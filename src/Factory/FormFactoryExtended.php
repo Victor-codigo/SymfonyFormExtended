@@ -15,6 +15,7 @@ use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
 
@@ -28,6 +29,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     private FlashBagInterface $flashBag;
     private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
+    private FormExtendedFields $formFields;
 
     /**
      * @throws \LogicException
@@ -37,12 +39,14 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
         TranslatorInterface $translator,
         UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
+        FormExtendedFields $formFields,
         RequestStack $request,
     ) {
         $this->formFactory = $formFactory;
         $this->translator = $translator;
         $this->uploadFile = $uploadFile;
         $this->constraints = $constraints;
+        $this->formFields = $formFields;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
@@ -76,6 +80,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
             $this->flashBag,
             $this->uploadFile,
             $this->constraints,
+            $this->formFields,
             $locale
         );
     }

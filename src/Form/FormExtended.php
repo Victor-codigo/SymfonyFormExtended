@@ -54,6 +54,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     private FlashBagInterface $flashBag;
     private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
+    private FormExtendedFields $formFields;
     public readonly string $translationDomain;
     public readonly ?string $locale;
 
@@ -66,6 +67,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         FlashBagInterface $flashBag,
         UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
+        FormExtendedFields $formFields,
         ?string $locale,
     ) {
         $this->form = $form;
@@ -75,6 +77,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         $this->uploadFile = $uploadFile;
         $this->locale = $locale;
         $this->constraints = $constraints;
+        $this->formFields = $formFields;
     }
 
     /**
@@ -312,6 +315,14 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         }
 
         return $this->constraints->getFormConstraints($dataClass);
+    }
+
+    /**
+     * @param array<int, \BackedEnum> $formFields
+     */
+    public function fieldsToObject(array $formFields): object
+    {
+        return $this->formFields->generateAnObjectWithFields($formFields);
     }
 
     /**

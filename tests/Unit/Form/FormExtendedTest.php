@@ -25,6 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormMessage;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
@@ -51,6 +52,7 @@ class FormExtendedTest extends TestCase
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
     private UploadFileService&MockObject $uploadFile;
     private FormExtendedConstraints&MockObject $constraints;
+    private FormExtendedFields&MockObject $formFields;
     private Request&MockObject $request;
     private FormTypeForTesting $formType;
     private string $locale = 'locale';
@@ -77,6 +79,7 @@ class FormExtendedTest extends TestCase
         $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->uploadFile = $this->createMock(UploadFileService::class);
         $this->constraints = $this->createMock(FormExtendedConstraints::class);
+        $this->formFields = $this->createMock(FormExtendedFields::class);
         $this->request = $this->createMock(Request::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->csrfToneManager = $this->createMock(CsrfTokenManagerInterface::class);
@@ -91,6 +94,7 @@ class FormExtendedTest extends TestCase
             $this->flashBag,
             $this->uploadFile,
             $this->constraints,
+            $this->formFields,
             $this->locale,
         );
     }

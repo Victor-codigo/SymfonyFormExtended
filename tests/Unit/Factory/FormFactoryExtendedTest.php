@@ -22,6 +22,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Factory\FormFactoryExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait as TraitTestingFormTrait;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
@@ -45,6 +46,7 @@ class FormFactoryExtendedTest extends TestCase
     private FlashBagInterface&MockObject $flashBag;
     private UploadFileService&MockObject $uploadedFile;
     private FormExtendedConstraints&MockObject $constraints;
+    private FormExtendedFields&MockObject $formFields;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
     /**
      * @var FormBuilderInterface<object>&MockObject
@@ -68,6 +70,7 @@ class FormFactoryExtendedTest extends TestCase
         $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->uploadedFile = $this->createMock(UploadFileService::class);
         $this->constraints = $this->createMock(FormExtendedConstraints::class);
+        $this->formFields = $this->createMock(FormExtendedFields::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->session = $this->createMock(Session::class);
         $this->formBuilder = $this->createMock(FormBuilderInterface::class);
@@ -88,6 +91,7 @@ class FormFactoryExtendedTest extends TestCase
             $this->translator,
             $this->uploadedFile,
             $this->constraints,
+            $this->formFields,
             $this->request
         );
     }
@@ -135,6 +139,7 @@ class FormFactoryExtendedTest extends TestCase
             $this->flashBag,
             $this->uploadedFile,
             $this->constraints,
+            $this->formFields,
             $this->locale
         );
         $object = $this->createFormFactorExtended();

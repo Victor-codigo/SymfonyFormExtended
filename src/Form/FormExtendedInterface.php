@@ -45,4 +45,9 @@ interface FormExtendedInterface extends FormInterface
      * @throws FormExtendedDataClassNotSetException
      */
     public function getConstraints(): object;
+
+    /**
+     * @param array<int, \BackedEnum> $formFields
+     */
+    public function fieldsToObject(array $formFields): object;
 }
