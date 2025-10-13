@@ -52,7 +52,6 @@ Adds following methods to interface **Symfony\Component\Form\FormInterface**.
 | **getFlashMessagesData** | Gets a type of form messages and clears flash from the stack | 1. string: Messages type |  Doctrine\Common\Collections\Collection<int, FormMessage> |
 | **getFlashMessages** | Gets a type of form messages and clears flash from the stack | 1. string: Messages type |  Doctrine\Common\Collections\Collection<int, string> |
 | **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string: Key for success messages <br>2. string: Key for error messages <br>3. bool: Whether to include errors of child forms as well | void |
-| **getTranslationDomain** | Gets the translation name for the form |1. string: Key for success messages <br>2. string: Key for error messages <br>3. bool: Whether to include errors of child forms as well | string |
 | **getConstraints** | Gets form constraints as object |  | object |
 | **getCsrfToken** | Gets form CSRF token |  | string |
 | **fieldsToObject** | Converts form fields enum into an object | 1. array<int, \BackedEnum>: Enum that contains form fields names | object |
