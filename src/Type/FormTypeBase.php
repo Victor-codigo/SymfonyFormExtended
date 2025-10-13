@@ -24,6 +24,7 @@ abstract class FormTypeBase extends AbstractType implements FormTypeExtendedInte
 
     public function __construct(
         protected TranslatorInterface $translator,
+        // TODO: DELETE OLD
         // private CsrfTokenManagerInterface $csrfTokenManager,
     ) {
     }
@@ -34,6 +35,7 @@ abstract class FormTypeBase extends AbstractType implements FormTypeExtendedInte
         $resolver->setDefault('csrf_field_name', static::CSRF_TOKEN_NAME);
     }
 
+    // TODO: DELTE OLD
     // public function getCsrfToken(): string
     // {
     //     return $this->csrfTokenManager->getToken(static::CSRF_TOKEN_ID)->getValue();

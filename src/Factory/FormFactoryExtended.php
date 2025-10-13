@@ -18,7 +18,7 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
-use VictorCodigo\UploadFile\Adapter\UploadFileService;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 
 /**
  * @template TData
@@ -28,10 +28,10 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     private FormFactoryInterface $formFactory;
     private TranslatorInterface $translator;
     private FlashBagInterface $flashBag;
-    private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
     private FormExtendedCsrfToken $formExtendedCsrfToken;
+    private FormExtendedUpload $formExtendedUpload;
 
     /**
      * @throws \LogicException
@@ -39,18 +39,18 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     public function __construct(
         FormFactoryInterface $formFactory,
         TranslatorInterface $translator,
-        UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
         FormExtendedCsrfToken $csrfTokenManager,
+        FormExtendedUpload $formExtendedUpload,
         RequestStack $request,
     ) {
         $this->formFactory = $formFactory;
         $this->translator = $translator;
-        $this->uploadFile = $uploadFile;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
         $this->formExtendedCsrfToken = $csrfTokenManager;
+        $this->formExtendedUpload = $formExtendedUpload;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
@@ -82,10 +82,10 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
             $form,
             $this->translator,
             $this->flashBag,
-            $this->uploadFile,
             $this->constraints,
             $this->formFields,
             $this->formExtendedCsrfToken,
+            $this->formExtendedUpload,
             $locale
         );
     }

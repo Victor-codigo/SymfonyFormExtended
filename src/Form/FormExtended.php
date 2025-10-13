@@ -20,7 +20,6 @@ use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\File\Exception\FormSizeFileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
@@ -29,8 +28,6 @@ use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetE
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
-use VictorCodigo\UploadFile\Adapter\UploadFileService;
-use VictorCodigo\UploadFile\Adapter\UploadedFileSymfonyAdapter;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadCanNotWriteException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadExtensionFileException;
@@ -39,8 +36,6 @@ use VictorCodigo\UploadFile\Domain\Exception\FileUploadNoFileException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadPartialFileException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadReplaceException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadTmpDirFileException;
-use VictorCodigo\UploadFile\Domain\FileInterface;
-use VictorCodigo\UploadFile\Domain\UploadedFileInterface;
 
 /**
  * @implements \IteratorAggregate<string, mixed>
@@ -53,10 +48,10 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     private FormInterface $form;
     private TranslatorInterface $translator;
     private FlashBagInterface $flashBag;
-    private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
-    private FormExtendedCsrfToken $formCsrfToken;
+    private FormExtendedCsrfToken $formExtendedCsrfToken;
+    private FormExtendedUpload $formExtendedUpload;
 
     public readonly string $translationDomain;
     public readonly ?string $locale;
@@ -68,21 +63,21 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         FormInterface $form,
         TranslatorInterface $translator,
         FlashBagInterface $flashBag,
-        UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
-        FormExtendedCsrfToken $formCsrfToken,
+        FormExtendedCsrfToken $formExtendedCsrfToken,
+        FormExtendedUpload $formExtendedUpload,
         ?string $locale,
     ) {
         $this->form = $form;
         $this->translator = $translator;
         $this->translationDomain = $this->getTranslationDomain();
         $this->flashBag = $flashBag;
-        $this->uploadFile = $uploadFile;
         $this->locale = $locale;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
-        $this->formCsrfToken = $formCsrfToken;
+        $this->formExtendedCsrfToken = $formExtendedCsrfToken;
+        $this->formExtendedUpload = $formExtendedUpload;
     }
 
     /**
@@ -224,88 +219,9 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function uploadFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded = []): static
     {
-        $uploadedFilesMovedToPath = $this->uploadFormFiles($request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
-
-        $this->setDataClassFiles($uploadedFilesMovedToPath);
+        $this->formExtendedUpload->uploadFiles($request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
         return $this;
-    }
-
-    /**
-     * @param array<int, string> $filenamesToBeReplacedByUploaded
-     *
-     * @return array<string, FileInterface>
-     *
-     * @throws FileUploadCanNotWriteException
-     * @throws FileUploadExtensionFileException
-     * @throws FileUploadException
-     * @throws FormSizeFileException
-     * @throws FileUploadIniSizeException
-     * @throws FileUploadNoFileException
-     * @throws FileUploadTmpDirFileException
-     * @throws FileUploadPartialFileException
-     * @throws FileUploadReplaceException
-     */
-    private function uploadFormFiles(Request $request, string $pathToSaveUploadedFiles, array $filenamesToBeReplacedByUploaded): array
-    {
-        $uploadedFiles = $this->getUploadedFormFiles($request);
-        $uploadedFilesMovedToPath = [];
-
-        /** @var string|false */
-        $fileNameToReplace = reset($filenamesToBeReplacedByUploaded);
-        foreach ($uploadedFiles as $propertyName => $uploadFile) {
-            if (false === $fileNameToReplace) {
-                $fileNameToReplace = null;
-            }
-
-            $uploadedFilesMovedToPath[$propertyName] = $this->uploadFile->__invoke($uploadFile, $pathToSaveUploadedFiles, $fileNameToReplace);
-
-            /** @var string|false */
-            $fileNameToReplace = next($filenamesToBeReplacedByUploaded);
-        }
-
-        return $uploadedFilesMovedToPath;
-    }
-
-    /**
-     * @return array<string, UploadedFileInterface>
-     */
-    private function getUploadedFormFiles(Request $request): array
-    {
-        /** @var array<string, UploadedFile|null> */
-        $uploadedFiles = $request->files->all($this->form->getName());
-
-        $uploadedFilesParsed = [];
-        foreach ($uploadedFiles as $fileName => $uploadedFile) {
-            if (!$uploadedFile instanceof UploadedFile) {
-                continue;
-            }
-
-            $uploadedFilesParsed[$fileName] = new UploadedFileSymfonyAdapter($uploadedFile);
-        }
-
-        return $uploadedFilesParsed;
-    }
-
-    /**
-     * @param array<string, FileInterface> $imagesUploaded
-     */
-    private function setDataClassFiles(array $imagesUploaded): void
-    {
-        if (empty($imagesUploaded)) {
-            return;
-        }
-
-        /** @var object */
-        $formDataClass = $this->form->getData();
-
-        foreach ($imagesUploaded as $propertyName => $file) {
-            if (!property_exists($formDataClass, $propertyName)) {
-                continue;
-            }
-
-            $formDataClass->$propertyName = $file->getFile();
-        }
     }
 
     /**
@@ -335,7 +251,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function getCsrfToken(): string
     {
-        return $this->formCsrfToken->getCsrfToken();
+        return $this->formExtendedCsrfToken->getCsrfToken();
     }
 
     /**
