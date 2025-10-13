@@ -14,7 +14,6 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormRegistryInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -23,6 +22,7 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait as TraitTestingFormTrait;
@@ -43,7 +43,6 @@ class FormFactoryExtendedTest extends TestCase
     private FormConfigInterface&MockObject $formConfig;
     private TranslatorInterface&MockObject $translator;
     private RequestStack&MockObject $request;
-    private FlashBagInterface&MockObject $flashBag;
     private FormExtendedConstraints&MockObject $constraints;
     private FormExtendedFields&MockObject $formFields;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
@@ -53,6 +52,7 @@ class FormFactoryExtendedTest extends TestCase
     private FormBuilderInterface&MockObject $formBuilder;
     private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
     private FormExtendedUpload&MockObject $formExtendedUpload;
+    private FormExtendedMessages&MockObject $formExtendedMessages;
     private Session&MockObject $session;
     private FormTypeForTesting $formType;
     private string $locale = 'locale';
@@ -67,7 +67,6 @@ class FormFactoryExtendedTest extends TestCase
         $this->formConfig = $this->createMock(FormConfigInterface::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->request = $this->createMock(RequestStack::class);
-        $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->constraints = $this->createMock(FormExtendedConstraints::class);
         $this->formFields = $this->createMock(FormExtendedFields::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
@@ -75,6 +74,7 @@ class FormFactoryExtendedTest extends TestCase
         $this->formBuilder = $this->createMock(FormBuilderInterface::class);
         $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
         $this->formExtendedUpload = $this->createMock(FormExtendedUpload::class);
+        $this->formExtendedMessages = $this->createMock(FormExtendedMessages::class);
         $this->formType = new FormTypeForTesting($this->translator);
 
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
@@ -87,11 +87,11 @@ class FormFactoryExtendedTest extends TestCase
     {
         return new FormFactoryExtended(
             $this->formFactory,
-            $this->translator,
             $this->constraints,
             $this->formFields,
             $this->formExtendedCsrfToken,
             $this->formExtendedUpload,
+            $this->formExtendedMessages,
             $this->request
         );
     }
@@ -128,19 +128,13 @@ class FormFactoryExtendedTest extends TestCase
             ->method('getForm')
             ->willReturn($this->form);
 
-        $this->session
-            ->expects($this->once())
-            ->method('getFlashBag')
-            ->willReturn($this->flashBag);
-
         $formExpected = new FormExtended(
             $this->form,
-            $this->translator,
-            $this->flashBag,
             $this->constraints,
             $this->formFields,
             $this->formExtendedCsrfToken,
             $this->formExtendedUpload,
+            $this->formExtendedMessages,
             $this->locale
         );
         $object = $this->createFormFactorExtended();
@@ -178,10 +172,6 @@ class FormFactoryExtendedTest extends TestCase
         $this->formBuilder
             ->expects($this->never())
             ->method('getForm');
-
-        $this->session
-            ->expects($this->never())
-            ->method('getFlashBag');
 
         $this->expectException(\LogicException::class);
         $this->createFormFactorExtended();

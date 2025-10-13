@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\ClearableErrorsInterface;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
@@ -21,12 +20,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\File\Exception\FormSizeFileException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
-use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadCanNotWriteException;
 use VictorCodigo\UploadFile\Domain\Exception\FileUploadException;
@@ -46,12 +42,11 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      * @var FormInterface<mixed>
      */
     private FormInterface $form;
-    private TranslatorInterface $translator;
-    private FlashBagInterface $flashBag;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
     private FormExtendedCsrfToken $formExtendedCsrfToken;
     private FormExtendedUpload $formExtendedUpload;
+    private FormExtendedMessages $formExtendedMessages;
 
     public readonly string $translationDomain;
     public readonly ?string $locale;
@@ -61,22 +56,20 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function __construct(
         FormInterface $form,
-        TranslatorInterface $translator,
-        FlashBagInterface $flashBag,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
         FormExtendedCsrfToken $formExtendedCsrfToken,
         FormExtendedUpload $formExtendedUpload,
+        FormExtendedMessages $formExtendedMessages,
         ?string $locale,
     ) {
         $this->form = $form;
-        $this->translator = $translator;
         $this->translationDomain = $this->getTranslationDomain();
-        $this->flashBag = $flashBag;
         $this->locale = $locale;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
         $this->formExtendedCsrfToken = $formExtendedCsrfToken;
+        $this->formExtendedMessages = $formExtendedMessages;
         $this->formExtendedUpload = $formExtendedUpload;
     }
 
@@ -85,21 +78,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function getMessageErrorsTranslated(bool $deep = false, bool $flatten = true): Collection
     {
-        $errors = $this->form->getErrors($deep, $flatten);
-
-        $errorsTranslated = [];
-        foreach ($errors as $error) {
-            $errorTranslated = new FormMessage(
-                $this->translator->trans($error->getMessage(), $error->getMessageParameters(), $this->translationDomain, $this->locale),
-                $error->getMessageTemplate(),
-                $error->getMessageParameters(),
-                $error->getMessagePluralization(),
-            );
-
-            $errorsTranslated[] = $errorTranslated;
-        }
-
-        return new ArrayCollection($errorsTranslated);
+        return $this->formExtendedMessages->getMessageErrorsTranslated($deep, $flatten);
     }
 
     /**
@@ -121,33 +100,12 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function getMessagesSuccessTranslated(): Collection
     {
-        /** @var FormTypeExtendedInterface<FormTypeBase<object>> */
-        $formType = $this->form->getConfig()->getType()->getInnerType();
-
-        return $formType
-            ->getFormSuccessMessages()
-            ->map(fn (FormMessage $messageOk): FormMessage => new FormMessage(
-                $this->translator->trans($messageOk->message, $messageOk->parameters, $this->translationDomain, $this->locale),
-                $messageOk->template,
-                $messageOk->parameters,
-                $messageOk->pluralization,
-            ));
+        return $this->formExtendedMessages->getMessagesSuccessTranslated();
     }
 
     public function addFlashMessagesTranslated(string $messagesSuccessType, string $messagesErrorType, bool $deep): void
     {
-        $errors = $this->getMessageErrorsTranslated($deep);
-
-        if (0 === $errors->count()) {
-            $this->getMessagesSuccessTranslated()
-                 ->map(fn (FormMessage $message) => $this->flashBag->add($messagesSuccessType, $message));
-
-            return;
-        }
-
-        foreach ($errors as $error) {
-            $this->flashBag->add($messagesErrorType, $error);
-        }
+        $this->formExtendedMessages->addFlashMessagesTranslated($messagesSuccessType, $messagesErrorType, $deep);
     }
 
     /**
@@ -155,10 +113,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function getFlashMessagesData(string $messagesType): Collection
     {
-        /** @var array<int, FormMessage> */
-        $messagesData = $this->flashBag->get($messagesType);
-
-        return new ArrayCollection($messagesData);
+        return $this->formExtendedMessages->getFlashMessagesData($messagesType);
     }
 
     /**
@@ -166,9 +121,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
      */
     public function getFlashMessages(string $messagesType): Collection
     {
-        $messages = $this->getFlashMessagesData($messagesType);
-
-        return $messages->map(fn (FormMessage $message): string => $message->message);
+        return $this->formExtendedMessages->getFlashMessages($messagesType);
     }
 
     /**

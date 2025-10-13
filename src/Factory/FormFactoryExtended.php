@@ -9,15 +9,14 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 
 /**
@@ -26,38 +25,35 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 class FormFactoryExtended implements FormFactoryExtendedInterface
 {
     private FormFactoryInterface $formFactory;
-    private TranslatorInterface $translator;
-    private FlashBagInterface $flashBag;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
     private FormExtendedCsrfToken $formExtendedCsrfToken;
     private FormExtendedUpload $formExtendedUpload;
+    private FormExtendedMessages $formExtendedMessages;
 
     /**
      * @throws \LogicException
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        TranslatorInterface $translator,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
         FormExtendedCsrfToken $csrfTokenManager,
         FormExtendedUpload $formExtendedUpload,
+        FormExtendedMessages $formExtendedMessages,
         RequestStack $request,
     ) {
         $this->formFactory = $formFactory;
-        $this->translator = $translator;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
         $this->formExtendedCsrfToken = $csrfTokenManager;
         $this->formExtendedUpload = $formExtendedUpload;
+        $this->formExtendedMessages = $formExtendedMessages;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
             throw new \LogicException('FormFactoryExtended needs to have a session available.');
         }
-
-        $this->flashBag = $session->getFlashBag();
     }
 
     /**
@@ -80,12 +76,11 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
 
         return new FormExtended(
             $form,
-            $this->translator,
-            $this->flashBag,
             $this->constraints,
             $this->formFields,
             $this->formExtendedCsrfToken,
             $this->formExtendedUpload,
+            $this->formExtendedMessages,
             $locale
         );
     }

@@ -16,12 +16,12 @@ use Symfony\Component\Form\ResolvedFormTypeInterface;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
@@ -48,10 +48,10 @@ class FormExtendedUploadTest extends TestCase
     private TranslatorInterface&MockObject $translator;
     private FormTypeForTesting $formType;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
-    private FlashBagInterface&MockObject $flashBag;
     private FormExtendedConstraints&MockObject $constraints;
     private FormExtendedFields&MockObject $formFields;
     private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
+    private FormExtendedMessages&MockObject $formExtendedMessages;
     private Request&MockObject $request;
     private string $locale = 'locale';
 
@@ -64,10 +64,10 @@ class FormExtendedUploadTest extends TestCase
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->formType = new FormTypeForTesting($this->translator);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
-        $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->constraints = $this->createMock(FormExtendedConstraints::class);
         $this->formFields = $this->createMock(FormExtendedFields::class);
         $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
+        $this->formExtendedMessages = $this->createMock(FormExtendedMessages::class);
         $this->request = $this->createMock(Request::class);
         $this->form = $this
             ->getMockBuilder(Form::class)
@@ -92,12 +92,11 @@ class FormExtendedUploadTest extends TestCase
     {
         return new FormExtended(
             $this->form,
-            $this->translator,
-            $this->flashBag,
             $this->constraints,
             $this->formFields,
             $this->formExtendedCsrfToken,
             $this->object,
+            $this->formExtendedMessages,
             $this->locale,
         );
     }
