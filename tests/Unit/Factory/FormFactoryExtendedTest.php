@@ -17,11 +17,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Factory\FormFactoryExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait as TraitTestingFormTrait;
@@ -52,7 +52,7 @@ class FormFactoryExtendedTest extends TestCase
      * @var FormBuilderInterface<object>&MockObject
      */
     private FormBuilderInterface&MockObject $formBuilder;
-    private CsrfTokenManagerInterface&MockObject $csrfToneManager;
+    private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
     private Session&MockObject $session;
     private FormTypeForTesting $formType;
     private string $locale = 'locale';
@@ -74,9 +74,8 @@ class FormFactoryExtendedTest extends TestCase
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->session = $this->createMock(Session::class);
         $this->formBuilder = $this->createMock(FormBuilderInterface::class);
-        $this->csrfToneManager = $this->createMock(CsrfTokenManagerInterface::class);
-
-        $this->formType = new FormTypeForTesting($this->translator, $this->csrfToneManager);
+        $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
+        $this->formType = new FormTypeForTesting($this->translator);
 
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
     }
@@ -92,6 +91,7 @@ class FormFactoryExtendedTest extends TestCase
             $this->uploadedFile,
             $this->constraints,
             $this->formFields,
+            $this->formExtendedCsrfToken,
             $this->request
         );
     }
@@ -140,6 +140,7 @@ class FormFactoryExtendedTest extends TestCase
             $this->uploadedFile,
             $this->constraints,
             $this->formFields,
+            $this->formExtendedCsrfToken,
             $this->locale
         );
         $object = $this->createFormFactorExtended();

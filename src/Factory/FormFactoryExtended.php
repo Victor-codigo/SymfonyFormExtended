@@ -15,6 +15,7 @@ use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
@@ -30,6 +31,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
+    private FormExtendedCsrfToken $formExtendedCsrfToken;
 
     /**
      * @throws \LogicException
@@ -40,6 +42,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
         UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
+        FormExtendedCsrfToken $csrfTokenManager,
         RequestStack $request,
     ) {
         $this->formFactory = $formFactory;
@@ -47,6 +50,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
         $this->uploadFile = $uploadFile;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
+        $this->formExtendedCsrfToken = $csrfTokenManager;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
@@ -81,6 +85,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
             $this->uploadFile,
             $this->constraints,
             $this->formFields,
+            $this->formExtendedCsrfToken,
             $locale
         );
     }

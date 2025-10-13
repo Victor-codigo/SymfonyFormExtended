@@ -20,11 +20,11 @@ use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormMessage;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
@@ -48,7 +48,7 @@ class FormExtendedTest extends TestCase
     private FormConfigInterface&MockObject $formConfig;
     private TranslatorInterface&MockObject $translator;
     private FlashBagInterface&MockObject $flashBag;
-    private CsrfTokenManagerInterface&MockObject $csrfToneManager;
+    private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
     private UploadFileService&MockObject $uploadFile;
     private FormExtendedConstraints&MockObject $constraints;
@@ -82,8 +82,8 @@ class FormExtendedTest extends TestCase
         $this->formFields = $this->createMock(FormExtendedFields::class);
         $this->request = $this->createMock(Request::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
-        $this->csrfToneManager = $this->createMock(CsrfTokenManagerInterface::class);
-        $this->formType = new FormTypeForTesting($this->translator, $this->csrfToneManager);
+        $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
+        $this->formType = new FormTypeForTesting($this->translator);
     }
 
     private function createFormExtended(): FormExtended
@@ -95,6 +95,7 @@ class FormExtendedTest extends TestCase
             $this->uploadFile,
             $this->constraints,
             $this->formFields,
+            $this->formExtendedCsrfToken,
             $this->locale,
         );
     }

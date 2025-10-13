@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeBase;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
@@ -55,6 +56,8 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     private UploadFileService $uploadFile;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
+    private FormExtendedCsrfToken $formCsrfToken;
+
     public readonly string $translationDomain;
     public readonly ?string $locale;
 
@@ -68,6 +71,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         UploadFileService $uploadFile,
         FormExtendedConstraints $constraints,
         FormExtendedFields $formFields,
+        FormExtendedCsrfToken $formCsrfToken,
         ?string $locale,
     ) {
         $this->form = $form;
@@ -78,6 +82,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         $this->locale = $locale;
         $this->constraints = $constraints;
         $this->formFields = $formFields;
+        $this->formCsrfToken = $formCsrfToken;
     }
 
     /**
@@ -323,6 +328,14 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     public function fieldsToObject(array $formFields): object
     {
         return $this->formFields->generateAnObjectWithFields($formFields);
+    }
+
+    /**
+     * @throws FormExtendedCsrfTokenNotSetException
+     */
+    public function getCsrfToken(): string
+    {
+        return $this->formCsrfToken->getCsrfToken();
     }
 
     /**

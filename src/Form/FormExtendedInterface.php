@@ -7,6 +7,7 @@ namespace VictorCodigo\SymfonyFormExtended\Form;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 
 /**
@@ -50,4 +51,9 @@ interface FormExtendedInterface extends FormInterface
      * @param array<int, \BackedEnum> $formFields
      */
     public function fieldsToObject(array $formFields): object;
+
+    /**
+     * @throws FormExtendedCsrfTokenNotSetException
+     */
+    public function getCsrfToken(): string;
 }
