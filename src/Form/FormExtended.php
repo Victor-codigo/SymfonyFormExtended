@@ -573,7 +573,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
 
     public function offsetUnset(mixed $offset): void
     {
-        $this->offsetUnset($offset);
+        $this->form->offsetUnset($offset);
     }
 
     public function count(): int
