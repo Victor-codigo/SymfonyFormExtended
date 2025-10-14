@@ -294,7 +294,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     /**
      * Updates the form with default model data.
      *
-     * @param mixed $modelData The data formatted as expected for the underlying object
+     * @param Form $modelData The data formatted as expected for the underlying object
      *
      * @return $this
      *
