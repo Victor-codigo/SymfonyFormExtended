@@ -17,11 +17,6 @@ use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
@@ -48,10 +43,6 @@ class FormExtendedUploadTest extends TestCase
     private TranslatorInterface&MockObject $translator;
     private FormTypeForTesting $formType;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
-    private FormExtendedConstraints&MockObject $constraints;
-    private FormExtendedFields&MockObject $formFields;
-    private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
-    private FormExtendedMessages&MockObject $formExtendedMessages;
     private Request&MockObject $request;
     private string $locale = 'locale';
 
@@ -64,10 +55,6 @@ class FormExtendedUploadTest extends TestCase
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->formType = new FormTypeForTesting($this->translator);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
-        $this->constraints = $this->createMock(FormExtendedConstraints::class);
-        $this->formFields = $this->createMock(FormExtendedFields::class);
-        $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
-        $this->formExtendedMessages = $this->createMock(FormExtendedMessages::class);
         $this->request = $this->createMock(Request::class);
         $this->form = $this
             ->getMockBuilder(Form::class)
@@ -85,19 +72,6 @@ class FormExtendedUploadTest extends TestCase
         $this->object = new FormExtendedUpload(
             $this->form,
             $this->uploadFile
-        );
-    }
-
-    private function createFormExtended(): FormExtended
-    {
-        return new FormExtended(
-            $this->form,
-            $this->constraints,
-            $this->formFields,
-            $this->formExtendedCsrfToken,
-            $this->object,
-            $this->formExtendedMessages,
-            $this->locale,
         );
     }
 
@@ -124,13 +98,12 @@ class FormExtendedUploadTest extends TestCase
     }
 
     #[Test]
-    public function itShouldUploadFiles2(): void
+    public function itShouldUploadFiles(): void
     {
         $formName = 'formName';
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
         $filenamesToBeReplacedByUploaded = [];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
         /** @var Collection<string, UploadedFile|null> */
@@ -172,9 +145,9 @@ class FormExtendedUploadTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
@@ -185,7 +158,6 @@ class FormExtendedUploadTest extends TestCase
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
         $filenamesToBeReplacedByUploaded = [];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         $formFilesUploaded = new ArrayCollection();
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
@@ -204,9 +176,9 @@ class FormExtendedUploadTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
@@ -217,7 +189,6 @@ class FormExtendedUploadTest extends TestCase
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
         $filenamesToBeReplacedByUploaded = [];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         /** @var Collection<string, UploadedFile|null> */
         $formFilesUploaded = new ArrayCollection(['image' => null]);
         $formDataClass = new FormDataClassForTesting();
@@ -237,9 +208,9 @@ class FormExtendedUploadTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
@@ -253,7 +224,6 @@ class FormExtendedUploadTest extends TestCase
             'fileToReplace2',
         ];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $formFilesUploadedMovedToNewPath = $this->getFormUploadedFilesMock();
         /** @var Collection<string, UploadedFile|null> */
@@ -304,9 +274,9 @@ class FormExtendedUploadTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
@@ -320,7 +290,6 @@ class FormExtendedUploadTest extends TestCase
             'fileToReplace2',
         ];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         $formFilesUploaded = new ArrayCollection();
         $formDataClass = new FormDataClassForTesting();
         $formDataClassExpected = new FormDataClassForTesting();
@@ -339,9 +308,9 @@ class FormExtendedUploadTest extends TestCase
             ->expects($this->never())
             ->method('__invoke');
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 
@@ -352,7 +321,6 @@ class FormExtendedUploadTest extends TestCase
         $pathToSaveUploadedFiles = 'path/to/save/files/uploaded';
         $filenamesToBeReplacedByUploaded = [];
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
         $formFilesUploadedSymfonyAdapter = $this->getFormUploadedFilesMock();
         $image1 = $formFilesUploadedSymfonyAdapter->get('image1') ?: throw new \LogicException('Image file 1 does not exist');
         $formFilesUploadedSymfonyAdapter->remove('image1');
@@ -403,9 +371,9 @@ class FormExtendedUploadTest extends TestCase
                 $formFilesUploadedMovedToNewPath->get('image3'),
             );
 
-        $return = $object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
+        $return = $this->object->uploadFiles($this->request, $pathToSaveUploadedFiles, $filenamesToBeReplacedByUploaded);
 
-        self::assertEquals($object, $return);
+        self::assertEquals($this->object, $return);
         self::assertEquals($formDataClassExpected, $formDataClass);
     }
 }
