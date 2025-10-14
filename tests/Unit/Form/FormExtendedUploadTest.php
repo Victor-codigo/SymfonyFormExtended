@@ -33,7 +33,7 @@ class FormExtendedUploadTest extends TestCase
     private UploadFileService&MockObject $uploadFile;
 
     /**
-     * @var FormInterface<mixed>|MockObject
+     * @var FormInterface<Form>|MockObject
      */
     private FormInterface&MockObject $form;
     /**

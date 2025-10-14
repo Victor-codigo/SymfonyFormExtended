@@ -7,6 +7,7 @@ namespace VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormConfigInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
@@ -28,7 +29,7 @@ trait TestingFormTrait
      * Adds to error message the string ".translated".
      *
      * @param Collection<int, FormMessage> $messageErrors
-     * @param FormInterface<mixed>         $form
+     * @param FormInterface<Form>          $form
      *
      * @return Collection<int, FormMessage>
      */
@@ -47,7 +48,7 @@ trait TestingFormTrait
     }
 
     /**
-     * @param FormInterface<mixed>&MockObject        $form
+     * @param FormInterface<Form>&MockObject         $form
      * @param FormConfigInterface<object>&MockObject $formConfig
      */
     private function createStubForGetInnerType(FormInterface&MockObject $form, FormConfigInterface&MockObject $formConfig, ResolvedFormTypeInterface&MockObject $resolvedFormType, FormTypeForTesting $formType): void

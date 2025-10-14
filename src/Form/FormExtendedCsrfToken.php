@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
@@ -13,7 +14,7 @@ class FormExtendedCsrfToken
     private const string ID_OF_FORM_CSRF_TOKEN_ID = 'csrf_token_id';
 
     /**
-     * @param FormInterface<mixed> $form
+     * @param FormInterface<Form> $form
      */
     public function __construct(
         private FormInterface $form,

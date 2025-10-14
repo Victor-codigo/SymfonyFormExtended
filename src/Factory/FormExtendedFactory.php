@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+namespace VictorCodigo\SymfonyFormExtended\Factory;
+
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
+use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
+use VictorCodigo\UploadFile\Adapter\UploadFileService;
+
+class FormExtendedFactory
+{
+    /**
+     * @param FormInterface<Form> $form
+     */
+    public function __construct(
+        private FormInterface $form,
+        private CsrfTokenManagerInterface $csrfTokenManager,
+        private ValidatorInterface $validator,
+        private TranslatorInterface $translator,
+        private FlashBagInterface $flashBag,
+        private UploadFileService $uploadFile,
+    ) {
+    }
+
+    /**
+     * @return FormInterface<Form>
+     */
+    public function createForm(): FormInterface
+    {
+        return $this->form;
+    }
+
+    /**
+     * @param FormInterface<Form> $form
+     */
+    public function createCsrfToken(FormInterface $form): FormExtendedCsrfToken
+    {
+        return new FormExtendedCsrfToken($form, $this->csrfTokenManager);
+    }
+
+    public function createConstraints(): FormExtendedConstraints
+    {
+        return new FormExtendedConstraints($this->validator);
+    }
+
+    public function createFields(): FormExtendedFields
+    {
+        return new FormExtendedFields();
+    }
+
+    /**
+     * @param FormInterface<Form> $form
+     */
+    public function createMessages(FormInterface $form, string $translationDomain, ?string $locale): FormExtendedMessages
+    {
+        return new FormExtendedMessages($form, $this->translator, $this->flashBag, $translationDomain, $locale);
+    }
+
+    /**
+     * @param FormInterface<Form> $form
+     */
+    public function createUpload(FormInterface $form): FormExtendedUpload
+    {
+        return new FormExtendedUpload($form, $this->uploadFile);
+    }
+}

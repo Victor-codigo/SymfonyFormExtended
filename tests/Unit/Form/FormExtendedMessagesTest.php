@@ -27,7 +27,7 @@ class FormExtendedMessagesTest extends TestCase
     private FormExtendedMessages $object;
 
     /**
-     * @var FormInterface<mixed>|MockObject
+     * @var FormInterface<Form>|MockObject
      */
     private FormInterface&MockObject $form;
     private TranslatorInterface&MockObject $translator;

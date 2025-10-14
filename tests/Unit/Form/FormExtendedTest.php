@@ -13,7 +13,11 @@ use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormConfigInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use VictorCodigo\SymfonyFormExtended\Factory\FormExtendedFactory;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
@@ -23,13 +27,14 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait;
+use VictorCodigo\UploadFile\Adapter\UploadFileService;
 
 class FormExtendedTest extends TestCase
 {
     use TestingFormTrait;
 
     /**
-     * @var FormInterface<mixed>|MockObject
+     * @var FormInterface<Form>|MockObject
      */
     private FormInterface&MockObject $form;
     /**
@@ -37,10 +42,14 @@ class FormExtendedTest extends TestCase
      */
     private FormConfigInterface&MockObject $formConfig;
     private TranslatorInterface&MockObject $translator;
+    private ValidatorInterface&MockObject $validator;
+    private FlashBagInterface&MockObject $flashBag;
+    private UploadFileService&MockObject $uploadFile;
+    private CsrfTokenManagerInterface&MockObject $csrfTokenManager;
     private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
     private ResolvedFormTypeInterface&MockObject $resolvedFormType;
-    private FormExtendedConstraints&MockObject $constraints;
-    private FormExtendedFields&MockObject $formFields;
+    private FormExtendedConstraints&MockObject $formExtendedConstraints;
+    private FormExtendedFields&MockObject $formExtendedFields;
     private FormExtendedUpload&MockObject $formExtendedUploaded;
     private FormExtendedMessages&MockObject $formExtendedMessages;
     private FormTypeForTesting $formType;
@@ -65,8 +74,13 @@ class FormExtendedTest extends TestCase
             ->getMock();
 
         $this->translator = $this->createMock(TranslatorInterface::class);
-        $this->constraints = $this->createMock(FormExtendedConstraints::class);
-        $this->formFields = $this->createMock(FormExtendedFields::class);
+        $this->validator = $this->createMock(ValidatorInterface::class);
+        $this->flashBag = $this->createMock(FlashBagInterface::class);
+        $this->uploadFile = $this->createMock(UploadFileService::class);
+        $this->csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
+
+        $this->formExtendedConstraints = $this->createMock(FormExtendedConstraints::class);
+        $this->formExtendedFields = $this->createMock(FormExtendedFields::class);
         $this->resolvedFormType = $this->createMock(ResolvedFormTypeInterface::class);
         $this->formExtendedCsrfToken = $this->createMock(FormExtendedCsrfToken::class);
         $this->formExtendedUploaded = $this->createMock(FormExtendedUpload::class);
@@ -74,17 +88,64 @@ class FormExtendedTest extends TestCase
         $this->formType = new FormTypeForTesting($this->translator);
     }
 
-    private function createFormExtended(): FormExtended
+    private function createFormExtendedFactory(bool $mockMethods): FormExtendedFactory&MockObject
     {
-        return new FormExtended(
-            $this->form,
-            $this->constraints,
-            $this->formFields,
-            $this->formExtendedCsrfToken,
-            $this->formExtendedUploaded,
-            $this->formExtendedMessages,
-            $this->locale,
-        );
+        $formExtendedFactory = $this
+            ->getMockBuilder(FormExtendedFactory::class)
+            ->setConstructorArgs([
+                $this->form,
+                $this->csrfTokenManager,
+                $this->validator,
+                $this->translator,
+                $this->flashBag,
+                $this->uploadFile,
+            ])
+            ->onlyMethods([
+                'createCsrfToken',
+                'createConstraints',
+                'createFields',
+                'createMessages',
+                'createUpload',
+            ])
+            ->getMock();
+
+        if (!$mockMethods) {
+            return $formExtendedFactory;
+        }
+
+        $formExtendedFactory
+            ->expects(self::once())
+            ->method('createCsrfToken')
+            ->willReturn($this->formExtendedCsrfToken);
+
+        $formExtendedFactory
+            ->expects(self::once())
+            ->method('createConstraints')
+            ->willReturn($this->formExtendedConstraints);
+
+        $formExtendedFactory
+            ->expects(self::once())
+            ->method('createFields')
+            ->willReturn($this->formExtendedFields);
+
+        $formExtendedFactory
+            ->expects(self::once())
+            ->method('createMessages')
+            ->willReturn($this->formExtendedMessages);
+
+        $formExtendedFactory
+            ->expects(self::once())
+            ->method('createUpload')
+            ->willReturn($this->formExtendedUploaded);
+
+        return $formExtendedFactory;
+    }
+
+    private function createFormExtended(bool $mockMethods): FormExtended
+    {
+        $formExtendedFactory = $this->createFormExtendedFactory($mockMethods);
+
+        return new FormExtended($formExtendedFactory, $this->locale);
     }
 
     #[Test]
@@ -103,7 +164,7 @@ class FormExtendedTest extends TestCase
             ->willReturn($formTypeNotImplementsFormTypeExtendedInterface);
 
         $this->expectException(\LogicException::class);
-        $this->createFormExtended();
+        $this->createFormExtended(false);
     }
 
     #[Test]
@@ -111,7 +172,7 @@ class FormExtendedTest extends TestCase
     {
         $iterator = new \ArrayIterator();
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
 
         // @phpstan-ignore phpunit.mockMethod
         $this->form
@@ -128,7 +189,7 @@ class FormExtendedTest extends TestCase
     public function itShouldFailGettingTheIteratorNotImplementsIteratorAggregate(): void
     {
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
         $objectReflection = new \ReflectionClass($object);
         $objectReflection
             ->getProperty('form')
@@ -142,7 +203,7 @@ class FormExtendedTest extends TestCase
     public function itShouldClearErrors(): void
     {
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
 
         // @phpstan-ignore phpunit.mockMethod
         $this->form
@@ -159,7 +220,7 @@ class FormExtendedTest extends TestCase
     public function itShouldClearingErrorsNotImplementsClearableErrorsInterface(): void
     {
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
         $objectReflection = new \ReflectionClass($object);
         $objectReflection
             ->getProperty('form')
@@ -173,7 +234,7 @@ class FormExtendedTest extends TestCase
     public function itShouldGetFormConstraints(): void
     {
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
         $dataClass = 'formDataClass';
         $constraintsExpected = new class {
             public object $notBlank;
@@ -190,7 +251,7 @@ class FormExtendedTest extends TestCase
             ->method('getDataClass')
             ->willReturn($dataClass);
 
-        $this->constraints
+        $this->formExtendedConstraints
             ->expects(self::once())
             ->method('getFormConstraints')
             ->with($dataClass)
@@ -205,7 +266,7 @@ class FormExtendedTest extends TestCase
     public function itShouldFailGetFormConstraintsNoDataClassSet(): void
     {
         $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
-        $object = $this->createFormExtended();
+        $object = $this->createFormExtended(true);
         $dataClass = null;
 
         $this->form
@@ -218,7 +279,7 @@ class FormExtendedTest extends TestCase
             ->method('getDataClass')
             ->willReturn($dataClass);
 
-        $this->constraints
+        $this->formExtendedConstraints
             ->expects(self::never())
             ->method('getFormConstraints');
 

@@ -21,6 +21,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\File\Exception\FormSizeFileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyPathInterface;
+use VictorCodigo\SymfonyFormExtended\Factory\FormExtendedFactory;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetException;
 use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
@@ -39,7 +40,7 @@ use VictorCodigo\UploadFile\Domain\Exception\FileUploadTmpDirFileException;
 class FormExtended implements FormExtendedInterface, \IteratorAggregate, ClearableErrorsInterface
 {
     /**
-     * @var FormInterface<mixed>
+     * @var FormInterface<Form>
      */
     private FormInterface $form;
     private FormExtendedConstraints $constraints;
@@ -51,26 +52,17 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     public readonly string $translationDomain;
     public readonly ?string $locale;
 
-    /**
-     * @param FormInterface<mixed> $form
-     */
-    public function __construct(
-        FormInterface $form,
-        FormExtendedConstraints $constraints,
-        FormExtendedFields $formFields,
-        FormExtendedCsrfToken $formExtendedCsrfToken,
-        FormExtendedUpload $formExtendedUpload,
-        FormExtendedMessages $formExtendedMessages,
-        ?string $locale,
-    ) {
-        $this->form = $form;
+    public function __construct(FormExtendedFactory $formExtendedFactory, ?string $locale)
+    {
+        $this->form = $formExtendedFactory->createForm();
         $this->translationDomain = $this->getTranslationDomain();
         $this->locale = $locale;
-        $this->constraints = $constraints;
-        $this->formFields = $formFields;
-        $this->formExtendedCsrfToken = $formExtendedCsrfToken;
-        $this->formExtendedMessages = $formExtendedMessages;
-        $this->formExtendedUpload = $formExtendedUpload;
+
+        $this->formExtendedCsrfToken = $formExtendedFactory->createCsrfToken($this->form);
+        $this->constraints = $formExtendedFactory->createConstraints();
+        $this->formFields = $formExtendedFactory->createFields();
+        $this->formExtendedUpload = $formExtendedFactory->createUpload($this->form);
+        $this->formExtendedMessages = $formExtendedFactory->createMessages($this->form, $this->translationDomain, $this->locale);
     }
 
     /**
@@ -132,7 +124,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
         $formType = $this->form->getConfig()->getType()->getInnerType();
 
         if (!$formType instanceof FormTypeExtendedInterface) {
-            throw new \LogicException('Form type must implement FormTypeTranslatedInterface');
+            throw new \LogicException('Form type must implement '.FormTypeExtendedInterface::class);
         }
 
         return $formType::TRANSLATION_DOMAIN;

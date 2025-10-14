@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FormSizeFileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -23,10 +24,10 @@ use VictorCodigo\UploadFile\Domain\UploadedFileInterface;
 
 class FormExtendedUpload
 {
+    /**
+     * @param FormInterface<Form> $form
+     */
     public function __construct(
-        /**
-         * @var FormInterface<mixed>
-         */
         private FormInterface $form,
         private UploadFileService $uploadFile,
     ) {

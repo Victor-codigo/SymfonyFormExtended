@@ -6,6 +6,7 @@ namespace VictorCodigo\SymfonyFormExtended\Form;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -15,7 +16,7 @@ use VictorCodigo\SymfonyFormExtended\Type\FormTypeExtendedInterface;
 class FormExtendedMessages
 {
     /**
-     * @param FormInterface<mixed> $form
+     * @param FormInterface<Form> $form
      */
     public function __construct(
         private FormInterface $form,

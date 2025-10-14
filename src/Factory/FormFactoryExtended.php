@@ -12,12 +12,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtended;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedConstraints;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedInterface;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
-use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 
 /**
  * @template TData
@@ -25,30 +20,18 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
 class FormFactoryExtended implements FormFactoryExtendedInterface
 {
     private FormFactoryInterface $formFactory;
-    private FormExtendedConstraints $constraints;
-    private FormExtendedFields $formFields;
-    private FormExtendedCsrfToken $formExtendedCsrfToken;
-    private FormExtendedUpload $formExtendedUpload;
-    private FormExtendedMessages $formExtendedMessages;
+    private FormExtendedFactory $formExtendedFactory;
 
     /**
      * @throws \LogicException
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        FormExtendedConstraints $constraints,
-        FormExtendedFields $formFields,
-        FormExtendedCsrfToken $csrfTokenManager,
-        FormExtendedUpload $formExtendedUpload,
-        FormExtendedMessages $formExtendedMessages,
+        FormExtendedFactory $formExtendedFactory,
         RequestStack $request,
     ) {
         $this->formFactory = $formFactory;
-        $this->constraints = $constraints;
-        $this->formFields = $formFields;
-        $this->formExtendedCsrfToken = $csrfTokenManager;
-        $this->formExtendedUpload = $formExtendedUpload;
-        $this->formExtendedMessages = $formExtendedMessages;
+        $this->formExtendedFactory = $formExtendedFactory;
         $session = $request->getSession();
 
         if (!$session instanceof Session) {
@@ -74,15 +57,7 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
         /** @var FormInterface<mixed> */
         $form = $builder->getForm();
 
-        return new FormExtended(
-            $form,
-            $this->constraints,
-            $this->formFields,
-            $this->formExtendedCsrfToken,
-            $this->formExtendedUpload,
-            $this->formExtendedMessages,
-            $locale
-        );
+        return new FormExtended($this->formExtendedFactory, $locale);
     }
 
     /**
