@@ -42,7 +42,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     /**
      * @var FormInterface<Form>
      */
-    private FormInterface $form;
+    public private(set) FormInterface $form;
     private FormExtendedConstraints $constraints;
     private FormExtendedFields $formFields;
     private FormExtendedCsrfToken $formExtendedCsrfToken;
@@ -52,9 +52,12 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     public readonly string $translationDomain;
     public readonly ?string $locale;
 
-    public function __construct(FormExtendedFactory $formExtendedFactory, ?string $locale)
+    /**
+     * @param FormInterface<Form> $form
+     */
+    public function __construct(FormInterface $form, FormExtendedFactory $formExtendedFactory, ?string $locale)
     {
-        $this->form = $formExtendedFactory->createForm();
+        $this->form = $form;
         $this->translationDomain = $this->getTranslationDomain();
         $this->locale = $locale;
 
@@ -593,7 +596,7 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     public function clearErrors(bool $deep = false): static
     {
         if (!$this->form instanceof ClearableErrorsInterface) {
-            throw new LogicException('The form must implement ClearableErrorsInterface to use clearErrors');
+            throw new LogicException('The form must implement '.ClearableErrorsInterface::class.' to use clearErrors');
         }
 
         $this->form->clearErrors($deep);

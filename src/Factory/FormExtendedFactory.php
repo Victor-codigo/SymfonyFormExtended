@@ -19,25 +19,13 @@ use VictorCodigo\UploadFile\Adapter\UploadFileService;
 
 class FormExtendedFactory
 {
-    /**
-     * @param FormInterface<Form> $form
-     */
     public function __construct(
-        private FormInterface $form,
         private CsrfTokenManagerInterface $csrfTokenManager,
         private ValidatorInterface $validator,
         private TranslatorInterface $translator,
         private FlashBagInterface $flashBag,
         private UploadFileService $uploadFile,
     ) {
-    }
-
-    /**
-     * @return FormInterface<Form>
-     */
-    public function createForm(): FormInterface
-    {
-        return $this->form;
     }
 
     /**

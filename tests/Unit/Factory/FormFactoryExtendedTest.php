@@ -7,6 +7,7 @@ namespace VictorCodigo\SymfonyFormExtended\Tests\Unit\Factory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormConfigInterface;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -30,7 +31,7 @@ class FormFactoryExtendedTest extends TestCase
     private FormFactoryInterface&MockObject $formFactory;
     private FormRegistryInterface&MockObject $formRegistry;
     /**
-     * @var FormInterface<mixed>&MockObject
+     * @var FormInterface<Form>&MockObject
      */
     private FormInterface&MockObject $form;
     /**
@@ -86,11 +87,6 @@ class FormFactoryExtendedTest extends TestCase
         $formName = 'formName';
         $formType = FormTypeForTesting::class;
 
-        $this->formExtendedFactory
-            ->expects(self::any())
-            ->method('createForm')
-            ->willReturn($this->form);
-
         $this->request
             ->expects(self::once())
             ->method('getSession')
@@ -117,7 +113,7 @@ class FormFactoryExtendedTest extends TestCase
             ->method('getForm')
             ->willReturn($this->form);
 
-        $formExpected = new FormExtended($this->formExtendedFactory, $this->locale);
+        $formExpected = new FormExtended($this->form, $this->formExtendedFactory, $this->locale);
         $object = $this->createFormFactoryExtended();
 
         $return = $object->createNamedExtended($formName, $formType, $this->locale);

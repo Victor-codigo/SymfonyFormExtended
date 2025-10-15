@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VictorCodigo\SymfonyFormExtended\Form;
 
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedCsrfTokenNotSetException;
@@ -15,6 +16,11 @@ use VictorCodigo\SymfonyFormExtended\Form\Exception\FormExtendedDataClassNotSetE
  */
 interface FormExtendedInterface extends FormInterface
 {
+    /**
+     * @var FormInterface<Form>
+     */
+    public FormInterface $form { get; }
+
     /**
      * @return Collection<int, FormMessage>
      */

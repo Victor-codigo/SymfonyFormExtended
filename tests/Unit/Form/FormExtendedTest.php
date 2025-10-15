@@ -93,7 +93,6 @@ class FormExtendedTest extends TestCase
         $formExtendedFactory = $this
             ->getMockBuilder(FormExtendedFactory::class)
             ->setConstructorArgs([
-                $this->form,
                 $this->csrfTokenManager,
                 $this->validator,
                 $this->translator,
@@ -145,7 +144,7 @@ class FormExtendedTest extends TestCase
     {
         $formExtendedFactory = $this->createFormExtendedFactory($mockMethods);
 
-        return new FormExtended($formExtendedFactory, $this->locale);
+        return new FormExtended($this->form, $formExtendedFactory, $this->locale);
     }
 
     #[Test]

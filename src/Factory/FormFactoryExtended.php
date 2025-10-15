@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VictorCodigo\SymfonyFormExtended\Factory;
 
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -54,10 +55,10 @@ class FormFactoryExtended implements FormFactoryExtendedInterface
     public function createNamedExtended(string $name, string $type, ?string $locale = null, mixed $data = null, array $options = []): FormExtendedInterface
     {
         $builder = $this->createNamedBuilder($name, $type, $data, $options);
-        /** @var FormInterface<mixed> */
+        /** @var FormInterface<Form> */
         $form = $builder->getForm();
 
-        return new FormExtended($this->formExtendedFactory, $locale);
+        return new FormExtended($form, $this->formExtendedFactory, $locale);
     }
 
     /**
