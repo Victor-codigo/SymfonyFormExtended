@@ -79,8 +79,8 @@ class FormExtendedTest extends TestCase
             $this->csrfTokenManager,
             $this->validator,
             $this->translator,
-            $this->flashBag,
-            $this->uploadFile
+            $this->uploadFile,
+            $this->request
         );
         $this->formFactoryExtended = new FormFactoryExtended(
             $this->formFactory,
@@ -115,9 +115,14 @@ class FormExtendedTest extends TestCase
         $request = $this->createMock(RequestStack::class);
 
         $request
-            ->expects(self::once())
+            ->expects(self::any())
             ->method('getSession')
             ->willReturn($session);
+
+        $session
+            ->expects(self::any())
+            ->method('getFlashBag')
+            ->willReturn($this->flashBag);
 
         return $request;
     }

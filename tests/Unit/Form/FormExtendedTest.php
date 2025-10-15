@@ -13,7 +13,10 @@ use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormConfigInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\ResolvedFormTypeInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -44,6 +47,8 @@ class FormExtendedTest extends TestCase
     private TranslatorInterface&MockObject $translator;
     private ValidatorInterface&MockObject $validator;
     private FlashBagInterface&MockObject $flashBag;
+    private SessionInterface&MockObject $session;
+    private RequestStack&MockObject $request;
     private UploadFileService&MockObject $uploadFile;
     private CsrfTokenManagerInterface&MockObject $csrfTokenManager;
     private FormExtendedCsrfToken&MockObject $formExtendedCsrfToken;
@@ -75,6 +80,7 @@ class FormExtendedTest extends TestCase
 
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->validator = $this->createMock(ValidatorInterface::class);
+        $this->session = $this->createMock(Session::class);
         $this->flashBag = $this->createMock(FlashBagInterface::class);
         $this->uploadFile = $this->createMock(UploadFileService::class);
         $this->csrfTokenManager = $this->createMock(CsrfTokenManagerInterface::class);
@@ -86,6 +92,8 @@ class FormExtendedTest extends TestCase
         $this->formExtendedUploaded = $this->createMock(FormExtendedUpload::class);
         $this->formExtendedMessages = $this->createMock(FormExtendedMessages::class);
         $this->formType = new FormTypeForTesting($this->translator);
+
+        $this->request = $this->createMockRequest($this->session);
     }
 
     private function createFormExtendedFactory(bool $mockMethods): FormExtendedFactory&MockObject
@@ -96,8 +104,8 @@ class FormExtendedTest extends TestCase
                 $this->csrfTokenManager,
                 $this->validator,
                 $this->translator,
-                $this->flashBag,
                 $this->uploadFile,
+                $this->request,
             ])
             ->onlyMethods([
                 'createCsrfToken',
@@ -138,6 +146,23 @@ class FormExtendedTest extends TestCase
             ->willReturn($this->formExtendedUploaded);
 
         return $formExtendedFactory;
+    }
+
+    private function createMockRequest(Session&MockObject $session): RequestStack&MockObject
+    {
+        $request = $this->createMock(RequestStack::class);
+
+        $request
+            ->expects(self::any())
+            ->method('getSession')
+            ->willReturn($session);
+
+        $session
+            ->expects(self::any())
+            ->method('getFlashBag')
+            ->willReturn($this->flashBag);
+
+        return $request;
     }
 
     private function createFormExtended(bool $mockMethods): FormExtended
