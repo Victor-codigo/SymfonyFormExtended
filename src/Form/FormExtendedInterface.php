@@ -62,4 +62,9 @@ interface FormExtendedInterface extends FormInterface
      * @throws FormExtendedCsrfTokenNotSetException
      */
     public function getCsrfToken(): string;
+
+    /**
+     * @param array<int, \BackedEnum> $formFields If a field ends in "[]", it is supposed that it is an array of fields
+     */
+    public function getFormTemplateData(array $formFields): FormTemplateData;
 }
