@@ -54,7 +54,8 @@ Adds following methods to interface **Symfony\Component\Form\FormInterface**.
 | **addFlashMessagesTranslated** | Adds flash messages to Symfony session flash bag |1. string: Key for success messages <br>2. string: Key for error messages <br>3. bool: Whether to include errors of child forms as well | void |
 | **getConstraints** | Gets form constraints as object |  | object |
 | **getCsrfToken** | Gets form CSRF token |  | string |
-| **fieldsToObject** | Converts form fields enum into an object | 1. array<int, \BackedEnum>: Enum that contains form fields names | object |
+| **getFormFields** | Gets form fields with the form name. Ej: form_name[field_name]. If field ends in "[]", is considered as field array | 1. array<int, \BackedEnum>: Enum that contains form fields names | object |
+| **getFormTemplateData** | Gets general info of the form, ready to use in a template | 1. array<int, \BackedEnum>: Enum that contains form fields names | VictorCodigo\SymfonyFormExtended\Form\FormTemplateData |
 | **uploadFiles** | Sets up form configuration for files uploaded, and move files to a specific path | 1. Symfony\Component\HttpFoundation\Request: Symfony request <br>2. string: Upload path where files are moved and saved <br>3. array<int, string>: File names to be removed in the path in the upload path | VictorCodigo\SymfonyFormExtended\Form\FormExtended |
 
 ## Example
