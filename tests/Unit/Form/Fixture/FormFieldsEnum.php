@@ -9,5 +9,6 @@ enum FormFieldsEnum: string
     case FIELD_1 = 'field_1';
     case FIELD_2 = 'field_2';
     case FIELD_3 = 'field_3';
-    case FIELD_4 = 'field_4';
+    case FIELD_4 = 'field_4[]';
+    case FIELD_5 = 'field_5[]';
 }

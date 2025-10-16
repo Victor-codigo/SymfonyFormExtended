@@ -20,38 +20,40 @@ class FormExtendedFieldsTest extends TestCase
         $this->object = new FormExtendedFields();
     }
 
-    /**
-     * @return object{
-     *  field_1: string,
-     *  field_2: string,
-     *  field_3: string,
-     *  field_4: string
-     * }
-     */
-    public function getFormFieldsExpected(): object
-    {
-        return new class {
-            public string $field_1 = 'field_1';
-            public string $field_2 = 'field_2';
-            public string $field_3 = 'field_3';
-            public string $field_4 = 'field_4';
-        };
-    }
-
     #[Test]
     public function itShouldGenerateAClassWithAllFormFields(): void
     {
-        $expected = $this->getFormFieldsExpected();
         $return = $this->object->generateAnObjectWithFields(FormFieldsEnum::cases());
 
-        self::assertCount(4, (array) $return);
+        self::assertCount(5, (array) $return);
         self::assertObjectHasProperty('field_1', $return);
         self::assertObjectHasProperty('field_2', $return);
         self::assertObjectHasProperty('field_3', $return);
         self::assertObjectHasProperty('field_4', $return);
-        self::assertEquals($expected->field_1, $return->field_1);
-        self::assertEquals($expected->field_2, $return->field_2);
-        self::assertEquals($expected->field_3, $return->field_3);
-        self::assertEquals($expected->field_4, $return->field_4);
+        self::assertObjectHasProperty('field_5', $return);
+        self::assertEquals('field_1', $return->field_1);
+        self::assertEquals('field_2', $return->field_2);
+        self::assertEquals('field_3', $return->field_3);
+        self::assertEquals('field_4[]', $return->field_4);
+        self::assertEquals('field_5[]', $return->field_5);
+    }
+
+    #[Test]
+    public function itShouldGenerateAClassWithAllFormFieldsWithFormName(): void
+    {
+        $formName = 'form_name';
+        $return = $this->object->generateAnObjectWithFormNameAndFields($formName, FormFieldsEnum::cases());
+
+        self::assertCount(5, (array) $return);
+        self::assertObjectHasProperty('field_1', $return);
+        self::assertObjectHasProperty('field_2', $return);
+        self::assertObjectHasProperty('field_3', $return);
+        self::assertObjectHasProperty('field_4', $return);
+        self::assertObjectHasProperty('field_5', $return);
+        self::assertEquals($formName.'[field_1]', $return->field_1);
+        self::assertEquals($formName.'[field_2]', $return->field_2);
+        self::assertEquals($formName.'[field_3]', $return->field_3);
+        self::assertEquals($formName.'[field_4][]', $return->field_4);
+        self::assertEquals($formName.'[field_5][]', $return->field_5);
     }
 }

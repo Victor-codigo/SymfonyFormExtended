@@ -54,9 +54,9 @@ interface FormExtendedInterface extends FormInterface
     public function getConstraints(): object;
 
     /**
-     * @param array<int, \BackedEnum> $formFields
+     * @param array<int, \BackedEnum> $formFields If a field ends in "[]", it is supposed that it is an array of fields
      */
-    public function fieldsToObject(array $formFields): object;
+    public function getFormFields(array $formFields): object;
 
     /**
      * @throws FormExtendedCsrfTokenNotSetException
