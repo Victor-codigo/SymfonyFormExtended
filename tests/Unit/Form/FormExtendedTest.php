@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VictorCodigo\SymfonyFormExtended\Tests\Unit\Form;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,10 @@ use VictorCodigo\SymfonyFormExtended\Form\FormExtendedCsrfToken;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedFields;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedMessages;
 use VictorCodigo\SymfonyFormExtended\Form\FormExtendedUpload;
+use VictorCodigo\SymfonyFormExtended\Form\FormMessage;
+use VictorCodigo\SymfonyFormExtended\Form\FormTemplateData;
+use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormDataClassForTesting;
+use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormFieldsEnum;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Form\Fixture\FormTypeForTesting;
 use VictorCodigo\SymfonyFormExtended\Tests\Unit\Trait\TestingFormTrait;
 use VictorCodigo\UploadFile\Adapter\UploadFileService;
@@ -75,6 +80,8 @@ class FormExtendedTest extends TestCase
                 'getData',
                 'getIterator',
                 'clearErrors',
+                'isSubmitted',
+                'isValid',
             ])
             ->getMock();
 
@@ -309,5 +316,130 @@ class FormExtendedTest extends TestCase
 
         $this->expectException(FormExtendedDataClassNotSetException::class);
         $object->getConstraints();
+    }
+
+    #[Test]
+    public function itShouldCreateAClassFormTemplateData(): void
+    {
+        $formName = 'form_name';
+        $formCsrfToken = 'CSRF token';
+        $formIsValidForm = true;
+        $formDataClass = FormDataClassForTesting::class;
+        $formFields = new class {
+            public string $field_1 = 'field_1';
+            public string $field_2 = 'field_2';
+            public string $field_3 = 'field_3';
+            public string $field_4 = 'field_4[]';
+            public string $field_5 = 'field_5[]';
+        };
+        $formConstraints = new class {
+            public string $name = 'name';
+            public int $int = 8;
+        };
+        $formMessagesError = new ArrayCollection([
+            new FormMessage(
+                'message error 1',
+                'message error 1 template',
+                ['message error 1 parameters'],
+                null
+            ),
+            new FormMessage(
+                'message error 2',
+                'message error 2 template',
+                ['message error 2 parameters'],
+                null
+            ),
+        ]);
+        $formMessagesOk = new ArrayCollection([
+            new FormMessage(
+                'message ok 1',
+                'message ok 1 template',
+                ['message ok 1 parameters'],
+                null
+            ),
+            new FormMessage(
+                'message ok 2',
+                'message ok 2 template',
+                ['message ok 2 parameters'],
+                null
+            ),
+        ]);
+
+        $messagesError = [
+            'message error 1',
+            'message error 2',
+        ];
+        $messagesOk = [
+            'message ok 1',
+            'message ok 2',
+        ];
+
+        $formTemplateDataExpected = new FormTemplateData(
+            $formFields,
+            $formConstraints,
+            $formCsrfToken,
+            $formIsValidForm,
+            $messagesError,
+            $messagesOk
+        );
+
+        $this->formExtendedFields
+            ->expects(self::once())
+            ->method('generateAnObjectWithFormNameAndFields')
+            ->with($formName, FormFieldsEnum::cases())
+            ->willReturn($formFields);
+
+        $this->formExtendedConstraints
+            ->expects(self::once())
+            ->method('getFormConstraints')
+            ->willReturn($formConstraints);
+
+        $this->formExtendedCsrfToken
+            ->expects(self::once())
+            ->method('getCsrfToken')
+            ->willReturn($formCsrfToken);
+
+        $this->form
+            ->expects(self::once())
+            ->method('isSubmitted')
+            ->willReturn($formIsValidForm);
+
+        $this->form
+            ->expects(self::once())
+            ->method('isValid')
+            ->willReturn($formIsValidForm);
+
+        $this->form
+            ->expects(self::once())
+            ->method('getName')
+            ->willReturn($formName);
+
+        $this->form
+            ->expects(self::any())
+            ->method('getConfig')
+            ->willReturn($this->formConfig);
+
+        $this->formConfig
+            ->expects(self::once())
+            ->method('getDataClass')
+            ->willReturn($formDataClass);
+
+        $this->formExtendedMessages
+            ->expects(self::once())
+            ->method('getMessageErrorsTranslated')
+            ->with(false, true)
+            ->willReturn($formMessagesError);
+
+        $this->formExtendedMessages
+            ->expects(self::once())
+            ->method('getMessagesSuccessTranslated')
+            ->willReturn($formMessagesOk);
+
+        $this->createStubForGetInnerType($this->form, $this->formConfig, $this->resolvedFormType, $this->formType);
+        $object = $this->createFormExtended(true);
+
+        $return = $object->getFormTemplateData(FormFieldsEnum::cases());
+
+        self::assertEquals($formTemplateDataExpected, $return);
     }
 }

@@ -187,11 +187,36 @@ class FormExtended implements FormExtendedInterface, \IteratorAggregate, Clearab
     }
 
     /**
-     * @param array<int, \BackedEnum> $formFields
+     * @param array<int, \BackedEnum> $formFields If a field ends in "[]", it is supposed that it is an array of fields
      */
-    public function fieldsToObject(array $formFields): object
+    public function getFormFields(array $formFields): object
     {
-        return $this->formFields->generateAnObjectWithFields($formFields);
+        return $this->formFields->generateAnObjectWithFormNameAndFields($this->getName(), $formFields);
+    }
+
+    /**
+     * @param array<int, \BackedEnum> $formFields If a field ends in "[]", it is supposed that it is an array of fields
+     */
+    public function getFormTemplateData(array $formFields): FormTemplateData
+    {
+        $messagesError = array_map(
+            static fn (FormMessage $error): string => $error->message,
+            $this->getMessageErrorsTranslated(false, true)->toArray()
+        );
+
+        $messagesOk = array_map(
+            static fn (FormMessage $ok): string => $ok->message,
+            $this->getMessagesSuccessTranslated()->toArray()
+        );
+
+        return new FormTemplateData(
+            $this->getFormFields($formFields),
+            $this->getConstraints(),
+            $this->getCsrfToken(),
+            $this->form->isSubmitted() && $this->form->isValid(),
+            $messagesError,
+            $messagesOk
+        );
     }
 
     /**
